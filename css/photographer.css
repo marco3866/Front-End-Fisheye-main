@@ -6,6 +6,9 @@
     background-color: #FAFAFA;
     height: 300px;
     margin: 0 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .contact_button {
@@ -25,15 +28,16 @@
     border-radius: 5px;
     background-color: #DB8876;
     width: 50%;
+    padding: 35px;
+    margin: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 35px;
-    margin: auto;
 }
 
 .modal header {
+    display: flex;
     justify-content: space-between;
     width: 100%;
 }
@@ -46,12 +50,13 @@
     font-size: 64px;
     font-weight: normal;
     text-align: center;
+    color: #901C1C;
 }
 
 form {
     display: flex;
-    width: 100%;
     flex-direction: column;
+    width: 100%;
     align-items: flex-start;
 }
 
@@ -64,7 +69,6 @@ form div {
     display: flex;
     flex-direction: column;
     width: 100%;
-    align-items: self-start;
     margin-bottom: 26px;
 }
 
@@ -73,4 +77,34 @@ form input {
     height: 68px;
     border: none;
     border-radius: 5px;
+}
+
+.photograph-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.photograph-info .photographer-name {
+    color: #D3573C; /* Rouge pour le nom */
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.photograph-info .photographer-city {
+    color: #901C1C; /* Bordeaux pour la ville */
+    font-size: 24px;
+}
+
+.photograph-info .photographer-tagline {
+    font-size: 20px;
+    margin: 10px 0; /* Espace entre la ville et le paragraphe */
+}
+
+.photograph-info .photographer-portrait {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    transform: scale(1.2); /* Zoom de 20% sur l'image */
 }

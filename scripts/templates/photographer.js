@@ -1,28 +1,36 @@
 function photographerTemplate(data) {
-    const { name, city, country, tagline, price, portrait } = data;
+    // Destructuration des données du photographe
+    const { id, name, city, country, tagline, price, portrait } = data;
+    // Le chemin relatif vers les images des photographes
     const picture = `../../Sample Photos/Photographers ID Photos/${portrait}`;
 
     function getUserCardDOM() {
+        // Création de l'élément 'article' qui contiendra les informations du photographe
         const article = document.createElement('article');
-        
-        // Créer le conteneur pour l'image
+
+        // Ajout d'un gestionnaire d'événements 'click' pour rediriger vers la page du photographe
+        article.addEventListener('click', function() {
+            location.href = `photographer.html?id=${id}`;
+        });
+
+        // Création et configuration du conteneur pour l'image de profil
         const imageContainer = document.createElement('div');
         imageContainer.className = 'image-container';
 
-        // Créer et configurer l'élément img pour l'image de profil
+        // Création et configuration de l'élément 'img' pour l'image de profil
         const img = document.createElement('img');
         img.setAttribute("src", picture);
         img.setAttribute("alt", `Portrait de ${name}`);
-        imageContainer.appendChild(img); // Ajouter l'image au conteneur
+        imageContainer.appendChild(img);  // Ajout de l'image au conteneur
 
-        // Créer et configurer l'élément h2 pour le nom
+        // Création et configuration de l'élément 'h2' pour le nom
         const h2 = document.createElement('h2');
         h2.textContent = name;
 
-        // Ajouter plus d'éléments pour les autres informations
-        const location = document.createElement('p');
-        location.textContent = `${city}, ${country}`;
-        location.className = 'location';
+        // Création et configuration des éléments pour les autres informations
+        const locationElem = document.createElement('p');
+        locationElem.textContent = `${city}, ${country}`;
+        locationElem.className = 'location';
 
         const taglineElem = document.createElement('p');
         taglineElem.textContent = tagline;
@@ -32,14 +40,15 @@ function photographerTemplate(data) {
         priceElem.textContent = `${price}€/jour`;
         priceElem.className = 'price';
 
-        // Ajouter les nouveaux éléments au DOM
-        article.appendChild(imageContainer); // Important: ajouter le conteneur de l'image au lieu de l'image elle-même
+        // Ajout des nouveaux éléments au 'article'
+        article.appendChild(imageContainer);
         article.appendChild(h2);
-        article.appendChild(location);
+        article.appendChild(locationElem);
         article.appendChild(taglineElem);
         article.appendChild(priceElem);
 
         return article;
     }
+
     return { getUserCardDOM };
 }

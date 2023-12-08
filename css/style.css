@@ -46,30 +46,30 @@ h1 {
 }
 .photographer_section article .location {
     color: #8b0000; /* Bordeaux */
-    margin: 2px 0; /* Marge réduite entre le nom et la ville */
+    margin: 2px 0; 
 }
 
 .photographer_section article .tagline {
-    margin: 2px 0; /* Marge identique à .location */
+    margin: 2px 0; 
 }
 
 .photographer_section article .price {
-    color: #ccc; /* Gris très clair */
-    margin: 2px 0; /* Marge identique à .location et .tagline */
+    color: #ccc; 
+    margin: 2px 0; 
 }
 .photographer_section article .image-container {
-    height: 200px; /* Hauteur du conteneur de l'image */
-    width: 200px; /* Largeur du conteneur de l'image */
-    border-radius: 50%; /* Pour rendre le conteneur rond */
-    overflow: hidden; /* Masque les parties de l'image qui débordent */
-    display: flex; /* Pour centrer l'image dans le conteneur */
-    justify-content: center; /* Centre horizontalement l'image dans le conteneur */
-    align-items: center; /* Centre verticalement l'image dans le conteneur */
+    height: 200px; 
+    width: 200px; 
+    border-radius: 50%; 
+    overflow: hidden; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
 }
 
 .photographer_section article img {
     object-fit: cover; /* Zoom pour couvrir et se concentrer sur la tête */
-    width: 100%; /* Assurez-vous que l'image remplit le conteneur */
-    height: 100%; /* Assurez-vous que l'image remplit le conteneur */
+    width: 100%; 
+    height: 100%; 
     transform: scale(1.2); /* Zoom de 20% sur l'image */
 }
