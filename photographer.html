@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link href="css/style.css" rel="stylesheet" type="text/css" />
-    <meta charset="utf-8">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <link href="https://fonts.googleapis.com/css?family=DM+Sans&display=swap" rel="stylesheet">
-    <title>Fisheye - photographe </title>
-  </head>
-  <body>
-    <header>
-      <img src="assets/images/logo.png" class="logo" />
-    </header>
-    <main id="main">
-      <div class="photograph-header">
-        <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
+<head>
+  <link href="css/style.css" rel="stylesheet" type="text/css" />
+  <meta charset="utf-8">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link href="https://fonts.googleapis.com/css?family=DM+Sans&display=swap" rel="stylesheet">
+  <title>Fisheye - photographe</title>
+</head>
+<body>
+  <header>
+    <img src="assets/images/logo.png" class="logo" />
+  </header>
+  <main id="main">
+    <div class="photograph-header">
+      <div class="photographer-info">
+        <h2 id="photographerName"></h2>
+        <p id="photographerLocation"></p>
+        <p id="photographerTagline"></p>
+        <p id="photographerPrice"></p>
       </div>
-    </main>
+      <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
+      <div class="image-container" id="photographerImageContainer"></div>
+    </div>
+  </main>
     <div id="contact_modal">
 			<div class="modal">
 				<header>
