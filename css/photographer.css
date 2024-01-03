@@ -4,26 +4,69 @@
 
 .photograph-header {
     background-color: #FAFAFA;
-    height: 300px;
-    margin: 0 100px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between; /* Éléments poussés aux extrémités */
+    padding: 20px 100px;
+}
+
+.photographer-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 40%; /* Limitation de la largeur pour éviter l'étirement horizontal */
+}
+
+#photographerName,
+#photographerLocation,
+#photographerTagline {
+    color: #333;
+    margin: 0; /* Aucun espace entre les lignes */
+    padding: 5px 0; /* Un peu d'espace au-dessus et en dessous de chaque ligne */
+    white-space: nowrap; /* Empêche le texte de passer à la ligne suivante */
+}
+
+#photographerName {
+    color: #D3573C;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+#photographerLocation {
+    color: #901C1C;
+    font-size: 24px;
+}
+
+#photographerTagline {
+    font-size: 20px;
 }
 
 .contact_button {
+    background-color: #901C1C;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
     font-size: 20px;
     font-weight: bold;
-    color: white;
-    padding: 11px;
-    width: 170px;
-    height: 70px;
-    border: none;
-    background-color: #901C1C;
-    border-radius: 5px;
     cursor: pointer;
+    margin-left: 2%; /* Ajoute un espace entre le bouton et le texte */
 }
 
+.image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2%; /* Ajoute un espace entre l'image et le bouton */
+}
+
+.image-container img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+/* Styles pour la modal */
 .modal {
     border-radius: 5px;
     background-color: #DB8876;
@@ -53,6 +96,7 @@
     color: #901C1C;
 }
 
+/* Styles pour le formulaire */
 form {
     display: flex;
     flex-direction: column;
@@ -77,34 +121,4 @@ form input {
     height: 68px;
     border: none;
     border-radius: 5px;
-}
-
-.photograph-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.photograph-info .photographer-name {
-    color: #D3573C; /* Rouge pour le nom */
-    font-size: 32px;
-    font-weight: bold;
-}
-
-.photograph-info .photographer-city {
-    color: #901C1C; /* Bordeaux pour la ville */
-    font-size: 24px;
-}
-
-.photograph-info .photographer-tagline {
-    font-size: 20px;
-    margin: 10px 0; /* Espace entre la ville et le paragraphe */
-}
-
-.photograph-info .photographer-portrait {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
-    transform: scale(1.2); /* Zoom de 20% sur l'image */
 }

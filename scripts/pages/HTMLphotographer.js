@@ -83,33 +83,24 @@ async function initPage() {
   if (photographerId && isValidPhotographerId(photographerId)) {
     const photographer = await getPhotographerData(photographerId);
     if (photographer) {
-      const media = await getPhotographerMedia(photographerId, photographer.name);
-      const headerContainer = document.querySelector('.photograph-header')
+      // Select existing elements by their IDs and assign content
+      const nameElement = document.getElementById('photographerName');
+      const locationElement = document.getElementById('photographerLocation');
+      const taglineElement = document.getElementById('photographerTagline');
+      const imageContainer = document.getElementById('photographerImageContainer');
 
-      // Créer et configurer les éléments pour le photographe
-      const imageContainer = document.createElement('div');
-      imageContainer.className = 'image-container';
+      nameElement.textContent = photographer.name;
+      locationElement.textContent = `${photographer.city}, ${photographer.country}`;
+      taglineElement.textContent = photographer.tagline;
+
+      // Assuming photographer.portrait is a path to the image
       const img = document.createElement('img');
       img.setAttribute("src", `../../Sample Photos/Photographers ID Photos/${photographer.portrait}`);
       img.setAttribute("alt", `Portrait de ${photographer.name}`);
       imageContainer.appendChild(img);
 
-      const h2 = document.createElement('h2');
-      h2.textContent = photographer.name;
-      const locationElem = document.createElement('p');
-      locationElem.textContent = `${photographer.city}, ${photographer.country}`;
-      const taglineElem = document.createElement('p');
-      taglineElem.textContent = photographer.tagline;
-      const priceElem = document.createElement('p');
-      priceElem.textContent = `${photographer.price}€/jour`;
-
-      // Insérer les éléments avant le bouton de contact
-      headerContainer.insertBefore(imageContainer, headerContainer.firstChild);
-      headerContainer.insertBefore(taglineElem, headerContainer.firstChild);
-      headerContainer.insertBefore(locationElem, headerContainer.firstChild);
-      headerContainer.insertBefore(h2, headerContainer.firstChild);
-
-      // Ajouter les éléments médias au conteneur principal
+      // Load and display photographer's media
+      const media = await getPhotographerMedia(photographerId, photographer.name);
       const mainContainer = document.querySelector('#main');
       const mediaElements = displayPhotographerMedia(media);
       mainContainer.appendChild(mediaElements);
@@ -118,4 +109,19 @@ async function initPage() {
     console.error('Aucun ID de photographe valide fourni dans l\'URL');
   }
 }
+
 window.addEventListener('DOMContentLoaded', initPage);
+
+// Function to get the photographer's ID from the URL
+function getPhotographerIdFromUrl() {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  return urlParams.get('id');
+}
+
+// Function to validate the photographer's ID
+function isValidPhotographerId(id) {
+  return id && !isNaN(parseInt(id));
+}
+
+// Add other functions here (getPhotographerData, getPhotographerMedia, displayPhotographerMedia)
