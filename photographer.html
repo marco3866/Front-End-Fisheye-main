@@ -21,7 +21,26 @@
       <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
       <div class="image-container" id="photographerImageContainer"></div>
     </div>
-  </main>
+
+    <!-- Ajoutez le filtre ici -->
+    <!-- Filter container -->
+<div class="filter-container">
+  <span class="filter-label">Trier par :</span>
+  <div class="custom-select-wrapper">
+    <div class="custom-select">
+      <div class="custom-select__trigger">
+        <span>Popularité</span>
+        <div class="arrow arrow-down"></div>
+      </div>
+      <div class="custom-options">
+        <!-- La classe 'selected' est retirée d'ici pour éviter la duplication -->
+        <span class="custom-option" data-value="popularity">Popularité</span>
+        <span class="custom-option" data-value="date">Date</span>
+        <span class="custom-option" data-value="title">Titre</span>
+      </div>
+    </div>
+  </div>
+</div>
     <div id="contact_modal">
 			<div class="modal">
 				<header>
