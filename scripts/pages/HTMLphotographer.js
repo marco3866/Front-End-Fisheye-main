@@ -1,11 +1,11 @@
-// MAIN I Fonction pour récupérer l'ID du photographe depuis l'URL
+// Fonction pour récupérer l'ID du photographe depuis l'URL
 function getPhotographerIdFromUrl() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   return urlParams.get('id');
 }
 
-// II Fonction pour valider l'ID du photographe
+// Fonction pour valider l'ID du photographe
 function isValidPhotographerId(id) {
   return id && !isNaN(parseInt(id));
 }
@@ -19,7 +19,7 @@ async function fetchJson(url) {
   return response.json();
 }
 
-// II Fonction pour charger les données du photographe
+// Fonction pour charger les données du photographe
 async function getPhotographerData(photographerId) {
   try {
     const data = await fetchJson('../photographers.json');
@@ -30,7 +30,7 @@ async function getPhotographerData(photographerId) {
   }
 }
 
-// IV Fonction pour charger les médias d'un photographe spécifique
+// Fonction pour charger les médias d'un photographe spécifique
 async function getPhotographerMedia(photographerId, photographerName) {
   try {
     const data = await fetchJson('../photographers.json');
@@ -45,15 +45,14 @@ async function getPhotographerMedia(photographerId, photographerName) {
   }
 }
 
-// V Fonction pour déterminer le chemin du média
+// Fonction pour déterminer le chemin du média
 function getMediaPath(media, photographerName) {
   const firstName = photographerName.split(" ")[0].replace(/\s+/g, '-');
   return media.image ? `../../Sample Photos/${firstName}/${media.image}` :
          media.video ? `../../Sample Photos/${firstName}/${media.video}` : '';
 }
 
-//MAIN VI CHARGER LES MEDIAS Fonction pour afficher les médias du photographe sur la page
-// VII Fonction pour créer un élément de like cliquable qui incrémente le nombre de likes
+// Fonction pour créer un élément de like cliquable
 function createLikeElement(likes) {
   const likesContainer = document.createElement('div');
   likesContainer.className = 'likes-container';
@@ -64,30 +63,21 @@ function createLikeElement(likes) {
 
   const heartIcon = document.createElement('i');
   heartIcon.className = 'heart-icon fas fa-heart';
-  heartIcon.textContent = '♥'; // Cœur plein
-  heartIcon.style.cursor = 'pointer'; // Change le curseur en main de clic pour l'icône de cœur
+  heartIcon.textContent = '♥';
+  heartIcon.style.cursor = 'pointer';
 
-  // Ajoutez les éléments au conteneur de likes
   likesContainer.appendChild(likeCount);
   likesContainer.appendChild(heartIcon);
 
-  // Écouteur d'événement pour augmenter le nombre de likes quand on clique sur le nombre ou le cœur
   likesContainer.addEventListener('click', function() {
     const currentLikes = parseInt(likeCount.textContent, 10);
     likeCount.textContent = currentLikes + 1;
   });
 
-  // Écouteur d'événement pour le cœur, pour permettre la propagation du clic
-  heartIcon.addEventListener('click', function(event) {
-    const currentLikes = parseInt(likeCount.textContent, 10);
-    likeCount.textContent = currentLikes + 1;
-    event.stopPropagation(); // Empêche le clic sur l'icône de cœur de propager à l'élément parent
-  });
-
   return likesContainer;
 }
 
-// VIII Fonction pour afficher les médias du photographe sur la page en grille
+// Fonction pour afficher les médias du photographe sur la page en grille
 function displayPhotographerMedia(media) {
   const mediaGridContainer = document.createElement('div');
   mediaGridContainer.className = 'media-grid-container';
@@ -125,135 +115,150 @@ function displayPhotographerMedia(media) {
   return mediaGridContainer;
 }
 
+// Fonction pour trier les médias en fonction de l'option sélectionnée
+function sortMedia(media, sortBy) {
+  let sortedMedia = [...media];
+  switch (sortBy) {
+    case 'likes':
+      sortedMedia.sort((a, b) => b.likes - a.likes);
+      break;
+    case 'date':
+      sortedMedia.sort((a, b) => new Date(b.date) - new Date(a.date));
+      break;
+    case 'title':
+      sortedMedia.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    default:
+      break;
+  }
+  return sortedMedia;
+}
+
+// Fonction pour afficher les médias triés
+function displaySortedMedia(sortedMedia) {
+  const mediaContainer = document.querySelector('#media-container');
+  if (mediaContainer) {
+    mediaContainer.innerHTML = '';
+    mediaContainer.appendChild(displayPhotographerMedia(sortedMedia));
+  }
+}
+
+// Fonction pour gérer le clic sur les options du sélecteur
+function onOptionClicked(event) {
+  const option = event.target;
+  const dropdown = option.closest('.custom-select');
+  const triggerSpan = dropdown.querySelector('.custom-select__trigger span');
+  const selectedValue = option.getAttribute('data-value');
+
+  updateSelectedOption(dropdown, option);
+  triggerSpan.textContent = option.textContent;
+
+  const photographerId = getPhotographerIdFromUrl();
+  if (currentPhotographer) {
+    getPhotographerMedia(photographerId, currentPhotographer.name).then(media => {
+      const sortedMedia = sortMedia(media, selectedValue);
+      displaySortedMedia(sortedMedia);
+    });
+  }
+
+  dropdown.classList.remove('open');
+}
+
+// Fonction pour mettre à jour l'option sélectionnée dans le sélecteur
+function updateSelectedOption(dropdown, selectedOption) {
+  dropdown.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+  selectedOption.classList.add('selected');
+}
+
+// Fonction pour basculer le sélecteur personnalisé et ajuster la direction de la flèche
+function toggleCustomSelect() {
+  const dropdown = document.querySelector('.custom-select');
+  const arrow = dropdown.querySelector('.arrow');
+
+  const isOpen = dropdown.classList.toggle('open');
+  arrow.textContent = isOpen ? '▲' : '▼';
+}
+
+// Variable globale pour stocker les données du photographe
+let currentPhotographer = null;
+
+// Fonction pour initialiser la page
 async function initPage() {
   const photographerId = getPhotographerIdFromUrl();
 
   if (photographerId && isValidPhotographerId(photographerId)) {
     const photographer = await getPhotographerData(photographerId);
     if (photographer) {
-      const nameElement = document.getElementById('photographerName');
-      const locationElement = document.getElementById('photographerLocation');
-      const taglineElement = document.getElementById('photographerTagline');
-      const imageContainer = document.getElementById('photographerImageContainer');
-
-      nameElement.textContent = photographer.name;
-      locationElement.textContent = `${photographer.city}, ${photographer.country}`;
-      taglineElement.textContent = photographer.tagline;
-
-      const img = document.createElement('img');
-      img.setAttribute("src", photographer.portrait);
-      img.setAttribute("alt", `Portrait of ${photographer.name}`);
-      imageContainer.appendChild(img);
-
+      currentPhotographer = photographer;
+      createPhotographHeader(photographer);
       const media = await getPhotographerMedia(photographerId, photographer.name);
-      const mainContainer = document.querySelector('#main');
-      const mediaElements = displayPhotographerMedia(media);
-      mainContainer.appendChild(mediaElements);
+      const mediaContainer = document.querySelector('#media-container');
+      mediaContainer.appendChild(displayPhotographerMedia(media));
     }
   } else {
     console.error('Invalid photographer ID provided in the URL');
   }
 }
 
-window.addEventListener('DOMContentLoaded', initPage);
+// Fonction pour créer et afficher l'en-tête du photographe
+function createPhotographHeader(photographer) {
+  const main = document.getElementById('main');
+  const headerSection = document.createElement('section');
+  headerSection.className = 'photograph-header';
 
-function getPhotographerIdFromUrl() {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  return urlParams.get('id');
+  const photographerInfo = document.createElement('div');
+  photographerInfo.className = 'photographer-info';
+  headerSection.appendChild(photographerInfo);
+
+  const name = document.createElement('h1');
+  name.id = 'photographerName';
+  name.textContent = photographer.name;
+  photographerInfo.appendChild(name);
+
+  const location = document.createElement('p');
+  location.id = 'photographerLocation';
+  location.textContent = `${photographer.city}, ${photographer.country}`;
+  photographerInfo.appendChild(location);
+
+  const tagline = document.createElement('p');
+  tagline.id = 'photographerTagline';
+  tagline.textContent = photographer.tagline;
+  photographerInfo.appendChild(tagline);
+
+  const contactButton = document.createElement('button');
+  contactButton.className = 'contact_button';
+  contactButton.textContent = 'Contactez-moi';
+  headerSection.appendChild(contactButton);
+
+  const imageContainer = document.createElement('div');
+  imageContainer.className = 'image-container';
+  imageContainer.id = 'photographerImageContainer';
+  const img = document.createElement('img');
+  img.src = `../../Sample Photos/Photographers ID Photos/${photographer.portrait}`;
+  img.alt = `Portrait de ${photographer.name}`;
+  imageContainer.appendChild(img);
+  headerSection.appendChild(imageContainer);
+
+  main.prepend(headerSection);
 }
 
-function isValidPhotographerId(id) {
-  return id && !isNaN(parseInt(id));
-}
-
-
-// MAIN VII Function to get the photographer's ID from the URL
-function getPhotographerIdFromUrl() {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  return urlParams.get('id');
-}
-
-// VIII Function to validate the photographer's ID
-function isValidPhotographerId(id) {
-  return id && !isNaN(parseInt(id));
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const heartIcons = document.querySelectorAll('.heart-icon');
-  
-  heartIcons.forEach(icon => {
-    icon.addEventListener('click', function() {
-      let likesElem = this.previousElementSibling; // on suppose que le span des likes est juste avant l'icône
-      let currentLikes = parseInt(likesElem.textContent);
-      
-      // Toggle the filled class
-      this.classList.toggle('filled');
-
-      // Check if the heart is filled, and increment or decrement the likes
-      if (this.classList.contains('filled')) {
-        likesElem.textContent = currentLikes + 1;
-      } else {
-        likesElem.textContent = currentLikes - 1;
-      }
-    });
-  });
-});
-
-// Add other functions here (getPhotographerData, getPhotographerMedia, displayPhotographerMedia)
-// MAIN X FILTRE
-// Toggle the custom select dropdown and adjust the arrow direction
-// Fonction pour basculer le sélecteur personnalisé et ajuster la direction de la flèche
-function toggleCustomSelect() {
-  const dropdown = document.querySelector('.custom-select');
-  const arrow = dropdown.querySelector('.arrow');
-  
-  // Change la direction de la flèche en fonction de l'état ouvert/fermé du menu déroulant
-  const isOpen = dropdown.classList.toggle('open');
-  arrow.textContent = isOpen ? '▲' : '▼';
-}
-
-// XI Fonction pour gérer le clic sur les options
-function onOptionClicked(event) {
-  const option = event.target;
-  const dropdown = option.closest('.custom-select');
-  const triggerSpan = dropdown.querySelector('.custom-select__trigger span');
-  
-  // Met à jour l'option sélectionnée visuellement et le texte du déclencheur
-  dropdown.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-  option.classList.add('selected');
-  triggerSpan.textContent = option.textContent;
-  
-  // Ferme le menu déroulant
-  dropdown.classList.remove('open');
-}
-
-// Ajout des écouteurs d'événements
+// Configuration des événements du sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', function() {
   const selectTrigger = document.querySelector('.custom-select__trigger');
-  const firstOption = document.querySelector('.custom-option[data-value="popularity"]');
-  
-  // Assurez-vous que 'Popularité' est sélectionnée par défaut et met à jour le texte du déclencheur
-  if (!firstOption.classList.contains('selected')) {
+  const options = document.querySelectorAll('.custom-option');
+
+  if (options.length > 0) {
+    const firstOption = options[0];
     firstOption.classList.add('selected');
+    selectTrigger.querySelector('span').textContent = firstOption.textContent;
   }
-  selectTrigger.querySelector('span').textContent = firstOption.textContent;
 
   selectTrigger.addEventListener('click', toggleCustomSelect);
 
-  // Gère le clic sur une option
-  document.querySelectorAll('.custom-option').forEach(option => {
+  options.forEach(option => {
+    option.removeEventListener('click', onOptionClicked); // Assurez-vous de retirer d'abord les anciens gestionnaires d'événements
     option.addEventListener('click', onOptionClicked);
   });
 
-  // Ferme le menu déroulant lorsque l'on clique en dehors
-  window.addEventListener('click', function(event) {
-    const dropdown = document.querySelector('.custom-select');
-    if (!dropdown.contains(event.target)) {
-      dropdown.classList.remove('open');
-      const arrow = dropdown.querySelector('.arrow');
-      arrow.textContent = '▼';
-    }
-  });
+  initPage();
 });

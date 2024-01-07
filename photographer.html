@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <link href="css/style.css" rel="stylesheet" type="text/css" />
   <meta charset="utf-8">
@@ -9,54 +9,54 @@
 </head>
 <body>
   <header>
-    <img src="assets/images/logo.png" class="logo" />
+    <img src="assets/images/logo.png" alt="Logo Fisheye" class="logo" />
   </header>
   <main id="main">
-    <div class="photograph-header">
-      <div class="photographer-info">
-        <h2 id="photographerName"></h2>
-        <p id="photographerLocation"></p>
-        <p id="photographerTagline"></p>
-      </div>
-      <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
-      <div class="image-container" id="photographerImageContainer"></div>
-    </div>
+    <!-- La section photograph-header sera créée et ajoutée par le script JavaScript -->
 
-    <!-- Ajoutez le filtre ici -->
-    <!-- Filter container -->
-<div class="filter-container">
-  <span class="filter-label">Trier par :</span>
-  <div class="custom-select-wrapper">
-    <div class="custom-select">
-      <div class="custom-select__trigger">
-        <span>Popularité</span>
-        <div class="arrow arrow-down"></div>
+    <!-- Filtre de triage -->
+    <section class="filter-container">
+      <span class="filter-label">Trier par :</span>
+      <div class="custom-select-wrapper">
+        <div class="custom-select">
+          <div class="custom-select__trigger">
+            <span>Popularité</span>
+            <div class="arrow arrow-down"></div>
+          </div>
+          <div class="custom-options">
+            <span class="custom-option" data-value="popularity">Popularité</span>
+            <span class="custom-option" data-value="date">Date</span>
+            <span class="custom-option" data-value="title">Titre</span>
+          </div>
+        </div>
       </div>
-      <div class="custom-options">
-        <!-- La classe 'selected' est retirée d'ici pour éviter la duplication -->
-        <span class="custom-option" data-value="popularity">Popularité</span>
-        <span class="custom-option" data-value="date">Date</span>
-        <span class="custom-option" data-value="title">Titre</span>
+    </section>
+
+    <!-- Conteneur spécifique pour les médias -->
+    <section id="media-container">
+      <!-- Les médias triés seront affichés ici -->
+    </section>
+
+    <!-- Modal de contact -->
+    <div id="contact_modal">
+      <div class="modal">
+        <header>
+          <h2>Contactez-moi</h2>
+          <!-- <img src="assets/icons/close.svg" alt="Fermer" />-->
+        </header>
+        <form>
+          <div>
+            <label for="first-name">Prénom</label>
+            <input id="first-name" name="first-name" required />
+          </div>
+          <button type="submit" class="contact_button">Envoyer</button>
+        </form>
       </div>
     </div>
-  </div>
-</div>
-    <div id="contact_modal">
-			<div class="modal">
-				<header>
-          <h2>Contactez-moi</h2>
-          <img src="assets/icons/close.svg" onclick="closeModal()" />
-        </header>
-				<form>
-					<div>
-						<label>Prénom</label>
-						<input />
-					</div>
-          <button class="contact_button">Envoyer</button>
-				</form>
-			</div>
-		</div>
-    <script src="scripts/pages/HTMLphotographer.js"></script>
-    <script src="/scripts/utils/contactForm.js"></script>
-  </body>
+  </main>
+  
+  <!-- Scripts -->
+  <script src="scripts/pages/HTMLphotographer.js"></script>
+  <script src="/scripts/utils/contactForm.js"></script>
+</body>
 </html>
