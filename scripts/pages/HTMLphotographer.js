@@ -115,6 +115,7 @@ function displayPhotographerMedia(media) {
   return mediaGridContainer;
 }
 
+// Fonction pour trier les médias
 // Fonction pour trier les médias en fonction de l'option sélectionnée
 function sortMedia(media, sortBy) {
   let sortedMedia = [...media];
@@ -166,26 +167,44 @@ function onOptionClicked(event) {
 
 // Fonction pour mettre à jour l'option sélectionnée dans le sélecteur
 function updateSelectedOption(dropdown, selectedOption) {
-  dropdown.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+  const options = dropdown.querySelectorAll('.custom-option');
+  options.forEach(opt => opt.classList.remove('selected'));
   selectedOption.classList.add('selected');
 }
 
-// Fonction pour basculer le sélecteur personnalisé et ajuster la direction de la flèche
-function toggleCustomSelect() {
-  const dropdown = document.querySelector('.custom-select');
-  const arrow = dropdown.querySelector('.arrow');
-
+// Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
+function toggleDropdown(dropdown) {
   const isOpen = dropdown.classList.toggle('open');
-  arrow.textContent = isOpen ? '▲' : '▼';
+  setArrowDirection(dropdown, isOpen);
 }
 
-// Variable globale pour stocker les données du photographe
-let currentPhotographer = null;
+// Fonction pour définir la direction de la flèche
+function setArrowDirection(dropdown, isOpen) {
+  const arrow = dropdown.querySelector('.arrow');
+  arrow.textContent = isOpen ? '▲' : '▼';
+  arrow.style.display = 'block'; // Assurez-vous que la flèche est toujours affichée
+}
 
-// Fonction pour initialiser la page
+// Écouteurs d'événements pour le sélecteur personnalisé
+document.addEventListener('DOMContentLoaded', function() {
+  const selectTrigger = document.querySelector('.custom-select__trigger');
+  const dropdown = document.querySelector('.custom-select');
+  const options = dropdown.querySelectorAll('.custom-option');
+
+  selectTrigger.addEventListener('click', () => toggleDropdown(dropdown));
+
+  options.forEach(option => {
+      option.addEventListener('click', onOptionClicked);
+  });
+
+  setArrowDirection(dropdown, false); // Initialise la flèche dans l'état fermé
+
+  initPage(); // Appel de la fonction initPage ici pour initialiser la page
+});
+
+// IIIIIIIIIII INIIIIITIALISER      Fonction pour initialiser la page
 async function initPage() {
   const photographerId = getPhotographerIdFromUrl();
-
   if (photographerId && isValidPhotographerId(photographerId)) {
     const photographer = await getPhotographerData(photographerId);
     if (photographer) {
@@ -194,6 +213,56 @@ async function initPage() {
       const media = await getPhotographerMedia(photographerId, photographer.name);
       const mediaContainer = document.querySelector('#media-container');
       mediaContainer.appendChild(displayPhotographerMedia(media));
+
+      const totalLikes = media.reduce((sum, item) => sum + item.likes, 0);
+      createFooter(photographer, totalLikes); // Appel de la fonction createFooter
+    }
+    if (currentPhotographer) {
+      createPhotographHeader(currentPhotographer);
+      currentPhotographerMedia = await getPhotographerMedia(photographerId, currentPhotographer.name);
+      displaySortedMedia(); // Affiche les médias sans tri initial
+    }
+  } else {
+    console.error('Invalid photographer ID provided in the URL');
+  }
+}
+
+// Fonction pour créer et afficher le footer
+function createFooter(photographer, totalLikes) {
+  const footer = document.createElement('footer');
+  footer.className = 'page-footer';
+
+  const totalLikesElement = document.createElement('div');
+  totalLikesElement.className = 'total-likes';
+  totalLikesElement.textContent = `${totalLikes} ♥`;
+
+  const priceElement = document.createElement('div');
+  priceElement.className = 'photographer-price';
+  priceElement.textContent = `${photographer.price}€ / jour`;
+
+  footer.appendChild(totalLikesElement);
+  footer.appendChild(priceElement);
+
+  document.body.appendChild(footer);
+}
+
+// Fonction modifiée pour initialiser la page
+async function initPage() {
+  const photographerId = getPhotographerIdFromUrl();
+
+  if (photographerId && isValidPhotographerId(photographerId)) {
+    const photographer = await getPhotographerData(photographerId);
+    if (photographer) {
+      currentPhotographer = photographer;
+      createPhotographHeader(photographer);
+
+      const media = await getPhotographerMedia(photographerId, photographer.name);
+      const mediaContainer = document.querySelector('#media-container');
+      mediaContainer.appendChild(displayPhotographerMedia(media));
+
+      // Calculez le nombre total de likes
+      const totalLikes = media.reduce((sum, item) => sum + item.likes, 0);
+      createFooter(photographer, totalLikes);
     }
   } else {
     console.error('Invalid photographer ID provided in the URL');
@@ -241,7 +310,6 @@ function createPhotographHeader(photographer) {
 
   main.prepend(headerSection);
 }
-
 // Configuration des événements du sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', function() {
   const selectTrigger = document.querySelector('.custom-select__trigger');

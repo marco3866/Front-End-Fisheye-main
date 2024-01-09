@@ -265,3 +265,30 @@ form input {
     font-family: 'Font Awesome 5 Free'; /* ou 'Font Awesome 5 Pro' si vous avez la version pro */
     font-weight: 900; /* Font Awesome nécessite font-weight 900 pour les icônes solides */
 }
+
+/* FOOTER STYLE !!*/
+/* Add this to your existing CSS file */
+.page-footer {
+    position: fixed;
+    left: 70%;
+    bottom: 0;
+    background-color: rgb(194, 104, 104);
+    color: black;
+    text-align: center;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+}
+
+.total-likes {
+    margin-left: 20px; /* Ajoute un peu d'espace à gauche */
+    margin-right: 20px;
+    font-size: 1.5em; /* Augmente la taille du texte */
+}
+
+.photographer-price {
+    margin-right: 20px; /* Ajoute un peu d'espace à droite */
+    font-size: 1.5em; /* Augmente la taille du texte */
+}
