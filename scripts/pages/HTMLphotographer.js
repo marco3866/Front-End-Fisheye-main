@@ -143,7 +143,7 @@ function displaySortedMedia(sortedMedia) {
     mediaContainer.appendChild(displayPhotographerMedia(sortedMedia));
   }
 }
-
+let currentSortValue = 'default'; // Une valeur par défaut pour le tri
 // Fonction pour gérer le clic sur les options du sélecteur
 function onOptionClicked(event) {
   const option = event.target;
@@ -297,6 +297,8 @@ function createPhotographHeader(photographer) {
   const contactButton = document.createElement('button');
   contactButton.className = 'contact_button';
   contactButton.textContent = 'Contactez-moi';
+  // Attachez l'écouteur ici avec le nom du photographe
+  contactButton.addEventListener('click', () => displayModal(photographer.name));
   headerSection.appendChild(contactButton);
 
   const imageContainer = document.createElement('div');
@@ -310,6 +312,23 @@ function createPhotographHeader(photographer) {
 
   main.prepend(headerSection);
 }
+
+// Modifiez la fonction displayModal pour accepter un paramètre name
+function displayModal(photographerName) {
+  const modal = document.getElementById("contact_modal");
+  const photographerNameElement = document.getElementById("photographer-name-modal");
+  
+  // Met à jour le contenu de l'élément avec l'id "photographer-name-modal"
+  if (photographerNameElement) {
+    photographerNameElement.textContent = photographerName;
+  }
+
+  // Affiche la modale
+  if (modal) {
+    modal.style.display = "block";
+  }
+}
+
 // Configuration des événements du sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', function() {
   const selectTrigger = document.querySelector('.custom-select__trigger');

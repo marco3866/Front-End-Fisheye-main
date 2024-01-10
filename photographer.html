@@ -24,7 +24,7 @@
             <div class="arrow arrow-down"></div>
           </div>
           <div class="custom-options">
-            <span class="custom-option" data-value="popularity">Popularité</span>
+            <span class="custom-option" data-value="likes">Popularité</span>
             <span class="custom-option" data-value="date">Date</span>
             <span class="custom-option" data-value="title">Titre</span>
           </div>
@@ -36,27 +36,37 @@
     <section id="media-container">
       <!-- Les médias triés seront affichés ici -->
     </section>
-
-    <!-- Modal de contact -->
-    <div id="contact_modal">
-      <div class="modal">
-        <header>
-          <h2>Contactez-moi</h2>
-          <!-- <img src="assets/icons/close.svg" alt="Fermer" />-->
-        </header>
-        <form>
-          <div>
-            <label for="first-name">Prénom</label>
-            <input id="first-name" name="first-name" required />
-          </div>
-          <button type="submit" class="contact_button">Envoyer</button>
-        </form>
-      </div>
-    </div>
   </main>
-  
+
+<!-- Modal de contact -->
+<div id="contact_modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Contactez-moi <span id="photographer-name-modal"></span></h2>
+    <form id="contact-form">
+      <div class="form-data">
+        <label for="first-name">Prénom</label>
+        <input id="first-name" name="first-name" type="text" required />
+      </div>
+      <div class="form-data">
+        <label for="last-name">Nom</label>
+        <input id="last-name" name="last-name" type="text" required />
+      </div>
+      <div class="form-data">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required />
+      </div>
+      <div class="form-data">
+        <label for="message">Votre message</label>
+        <textarea id="message" name="message" rows="4" required></textarea>
+      </div>
+      <button type="submit" class="contact_button">Envoyer</button>
+    </form>
+  </div>
+</div>
+
   <!-- Scripts -->
   <script src="scripts/pages/HTMLphotographer.js"></script>
-  <script src="/scripts/utils/contactForm.js"></script>
+  <script src="scripts/utils/contactForm.js"></script>
 </body>
 </html>
