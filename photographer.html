@@ -64,6 +64,25 @@
     </form>
   </div>
 </div>
+<!-- Gallery Modal -->
+<div id="gallery-modal" class="gallery-modal">
+  <!-- Close button -->
+  <span class="gallery-close" onclick="closeGalleryModal()">&times;</span>
+
+  <!-- Previous media button -->
+  <span class="gallery-prev" onclick="prevGalleryMedia()">&#10094;</span>
+
+  <!-- Gallery content container -->
+  <div id="gallery-content" class="gallery-content">
+    <!-- Dynamic content (image or video) will be injected here -->
+  </div>
+
+  <!-- Next media button -->
+  <span class="gallery-next" onclick="nextGalleryMedia()">&#10095;</span>
+
+  <!-- Caption for the image or video -->
+  <div id="caption" class="caption"></div>
+</div>
 
   <!-- Scripts -->
   <script src="scripts/pages/HTMLphotographer.js"></script>

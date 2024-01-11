@@ -324,3 +324,77 @@ form input {
     margin-right: 20px; /* Ajoute un peu d'espace à droite */
     font-size: 1.5em; /* Augmente la taille du texte */
 }
+
+
+/* GALLERY STYLE !!*/
+.gallery-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1500; /* Sit on top */
+    padding-top: 100px; /* Padding from the top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(255, 255, 255, 0.9); /* Black with opacity for background */
+}
+
+.gallery-close {
+    position: absolute;
+    top: 15px; /* Position from the top */
+    right: 35px; /* Position from the right */
+    color: #b22222; /* Bordeaux color for the close button */
+    font-size: 40px; /* Size of the close button */
+    font-weight: bold;
+    cursor: pointer; /* Cursor pointer to indicate it's clickable */
+}
+
+.gallery-prev, .gallery-next {
+    cursor: pointer; /* Cursor pointer to indicate they're clickable */
+    position: absolute;
+    top: 50%; /* Center vertically */
+    width: auto;
+    padding: 16px; /* Padding for larger click area */
+    margin-top: -50px; /* Adjust to vertically align arrows */
+    color: #b22222; /* Bordeaux color for arrows */
+    font-weight: bold;
+    font-size: 20px; /* Size of the arrow text */
+    transition: color 0.3s ease; /* Transition for color change */
+    user-select: none; /* Prevent text selection */
+}
+
+.gallery-prev {
+    left: 0; /* Align to the left */
+    border-radius: 3px 0 0 3px; /* Rounded corners on the left */
+}
+
+.gallery-next {
+    right: 0; /* Align to the right */
+    border-radius: 0 3px 3px 0; /* Rounded corners on the right */
+}
+
+.gallery-content {
+    margin: auto; /* Center the content */
+    display: block; /* Block display to fill width */
+    max-width: none; /* Remove max width restrictions */
+}
+
+.gallery-content img, .gallery-content video {
+    width: 100%; /* Full width for images/videos */
+    max-height: 80vh; /* Max height for images/videos */
+    object-fit: contain; /* Ensure the content fits without stretching */
+    background-color: rgba(255, 255, 255, 0.9)
+}
+
+#caption {
+    position: absolute;
+    left: 50%; /* Positionner au milieu horizontalement */
+    transform: translateX(-50%); /* Décaler de la moitié de sa largeur pour un centrage précis */
+    color: #b22222; /* White color for the caption */
+    font-size: 18px; /* Font size for the caption */
+    padding: 10px; /* Padding inside the caption box */
+    border-radius: 5px; /* Rounded corners for the caption box */
+    max-width: calc(100% - 40px); /* Max width with padding considered */
+    box-sizing: border-box; /* Include padding and border in the width */
+}

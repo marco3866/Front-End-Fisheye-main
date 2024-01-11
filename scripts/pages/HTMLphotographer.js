@@ -1,3 +1,7 @@
+let totalLikesCount = 0; // Ce sera mis à jour avec le total initial des likes
+let currentMediaIndex = 0;
+let currentPhotographerMedia = []; // Cette variable doit être définie globalement
+
 // Fonction pour récupérer l'ID du photographe depuis l'URL
 function getPhotographerIdFromUrl() {
   const queryString = window.location.search;
@@ -52,8 +56,26 @@ function getMediaPath(media, photographerName) {
          media.video ? `../../Sample Photos/${firstName}/${media.video}` : '';
 }
 
+// Fonction pour recalculer et mettre à jour le total des likes
+function recalculateTotalLikes() {
+  let newTotalLikes = 0;
+  const likeElements = document.querySelectorAll('.like-count');
+  likeElements.forEach(elem => {
+    newTotalLikes += parseInt(elem.textContent, 10);
+  });
+  updateTotalLikesDisplay(newTotalLikes);
+}
+
+// Fonction pour mettre à jour l'affichage du total des likes
+function updateTotalLikesDisplay(newTotal) {
+  const totalLikesElement = document.querySelector('.total-likes');
+  if (totalLikesElement) {
+    totalLikesElement.textContent = `${newTotal} ♥`;
+  }
+}
+
 // Fonction pour créer un élément de like cliquable
-function createLikeElement(likes) {
+function createLikeElement(likes, mediaId) {
   const likesContainer = document.createElement('div');
   likesContainer.className = 'likes-container';
 
@@ -70,19 +92,23 @@ function createLikeElement(likes) {
   likesContainer.appendChild(heartIcon);
 
   likesContainer.addEventListener('click', function() {
+    // Incrémenter le nombre de likes pour ce média
     const currentLikes = parseInt(likeCount.textContent, 10);
     likeCount.textContent = currentLikes + 1;
+
+    // Recalculer et mettre à jour le total des likes
+    recalculateTotalLikes();
   });
 
   return likesContainer;
 }
 
-// Fonction pour afficher les médias du photographe sur la page en grille
+
 function displayPhotographerMedia(media) {
   const mediaGridContainer = document.createElement('div');
   mediaGridContainer.className = 'media-grid-container';
 
-  media.forEach(m => {
+  media.forEach((m, index) => { // Assurez-vous d'ajouter l'index ici pour le référencer plus tard
     const mediaElement = document.createElement('div');
     mediaElement.className = 'media-item';
 
@@ -90,10 +116,23 @@ function displayPhotographerMedia(media) {
     mediaImgContainer.className = 'media-img-container';
 
     const mediaItem = m.image ? document.createElement('img') : document.createElement('video');
-    mediaItem.src = m.path;
     mediaItem.alt = m.title;
     mediaItem.className = 'media-img';
-    if (m.video) mediaItem.controls = true;
+    if (m.video) {
+      const videoSource = document.createElement('source');
+      videoSource.src = m.path;
+      videoSource.type = 'video/mp4'; // Assurez-vous que le type est correct en fonction du format de la vidéo
+      mediaItem.appendChild(videoSource);
+      mediaItem.controls = true;
+    } else {
+      mediaItem.src = m.path; // Assurez-vous que l'image a également une source
+    }
+
+    // Ajoutez un gestionnaire de clic pour ouvrir la galerie modale
+    mediaItem.addEventListener('click', function() {
+      openGalleryModal(m); // Utilisez 'index' pour ouvrir la bonne image dans la modale
+    });
+
     mediaImgContainer.appendChild(mediaItem);
 
     const mediaDetails = document.createElement('div');
@@ -114,7 +153,45 @@ function displayPhotographerMedia(media) {
 
   return mediaGridContainer;
 }
+// ......GALLERY MODAL
+function openGalleryModal(media) {
+  const galleryModal = document.getElementById('gallery-modal');
+  const galleryContent = document.getElementById('gallery-content');
+  const caption = document.getElementById('caption'); // Get the caption element
 
+  // Clear previous content
+  galleryContent.innerHTML = '';
+
+  if (media.image) {
+    const imageElement = document.createElement('img');
+    imageElement.src = media.path;
+    imageElement.alt = media.title;
+    imageElement.className = 'gallery-content-img';
+    galleryContent.appendChild(imageElement);
+    caption.textContent = media.title; // Set caption text
+  } else if (media.video) {
+    const videoElement = document.createElement('video');
+    videoElement.src = media.path;
+    videoElement.alt = media.title;
+    videoElement.controls = true;
+    videoElement.className = 'gallery-content-video';
+    galleryContent.appendChild(videoElement);
+    caption.textContent = media.title; // Set caption text
+  }
+
+  galleryModal.style.display = "block";
+}
+document.querySelector('.gallery-close').addEventListener('click', function() {
+  document.getElementById('gallery-modal').style.display = "none";
+});
+
+// Pour fermer la modale en cliquant en dehors de l'image
+window.addEventListener('click', function(event) {
+  const galleryModal = document.getElementById('gallery-modal');
+  if (event.target == galleryModal) {
+    galleryModal.style.display = "none";
+  }
+});
 // Fonction pour trier les médias
 // Fonction pour trier les médias en fonction de l'option sélectionnée
 function sortMedia(media, sortBy) {
@@ -203,30 +280,73 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // IIIIIIIIIII INIIIIITIALISER      Fonction pour initialiser la page
+// Fonction pour initialiser la page
 async function initPage() {
   const photographerId = getPhotographerIdFromUrl();
   if (photographerId && isValidPhotographerId(photographerId)) {
-    const photographer = await getPhotographerData(photographerId);
-    if (photographer) {
-      currentPhotographer = photographer;
-      createPhotographHeader(photographer);
-      const media = await getPhotographerMedia(photographerId, photographer.name);
-      const mediaContainer = document.querySelector('#media-container');
-      mediaContainer.appendChild(displayPhotographerMedia(media));
-
-      const totalLikes = media.reduce((sum, item) => sum + item.likes, 0);
-      createFooter(photographer, totalLikes); // Appel de la fonction createFooter
-    }
-    if (currentPhotographer) {
-      createPhotographHeader(currentPhotographer);
-      currentPhotographerMedia = await getPhotographerMedia(photographerId, currentPhotographer.name);
-      displaySortedMedia(); // Affiche les médias sans tri initial
+    try {
+      const photographerData = await getPhotographerData(photographerId);
+      if (photographerData) {
+        // Définir les données actuelles du photographe
+        currentPhotographer = photographerData;
+        createPhotographHeader(currentPhotographer);
+        
+        // Récupérer et afficher les médias du photographe
+        currentPhotographerMedia = await getPhotographerMedia(photographerId, currentPhotographer.name);
+        const mediaContainer = document.querySelector('#media-container');
+        mediaContainer.appendChild(displayPhotographerMedia(currentPhotographerMedia));
+        
+        // Initialiser la galerie une fois que les médias sont chargés
+        initializeGallery();
+      }
+    } catch (error) {
+      console.error('An error occurred while initializing the page:', error);
     }
   } else {
     console.error('Invalid photographer ID provided in the URL');
   }
 }
+// Fonction pour afficher le média précédent dans la galerie
+function prevGalleryMedia() {
+  // Décrémenter l'index de média actuel
+  currentMediaIndex--;
+  if (currentMediaIndex < 0) {
+    // Si l'index est inférieur à 0, aller au dernier média
+    currentMediaIndex = currentPhotographerMedia.length - 1;
+  }
+  // Mettre à jour l'affichage avec le média précédent
+  displayGalleryMedia(currentPhotographerMedia[currentMediaIndex]);
+}
+function displayGalleryMedia(media) {
+    const galleryImage = document.getElementById('gallery-img');
+    const galleryModal = document.getElementById('gallery-modal');
+    const captionText = document.getElementById('caption');
+  if (media.image) {
+    galleryImage.src = media.path;
+    galleryImage.alt = media.title;
+    // Assurez-vous de cacher le lecteur vidéo si c'est une image
+  } else if (media.video) {
+    // Mettre à jour la source de la vidéo et montrer le lecteur vidéo
+  }
+  // Mettre à jour le texte de la légende
+  const caption = document.getElementById('caption');
+  caption.textContent = media.title;
+}
+function nextGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
+  displayGalleryMedia(currentPhotographerMedia[currentMediaIndex]);
+}
 
+function prevGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
+  displayGalleryMedia(currentPhotographerMedia[currentMediaIndex]);
+}
+ // Ajouter les gestionnaires pour les boutons de navigation de la galerie
+ document.querySelector('.gallery-prev').addEventListener('click', prevGalleryMedia);
+ document.querySelector('.gallery-next').addEventListener('click', nextGalleryMedia);
+ document.querySelector('.gallery-close').addEventListener('click', () => {
+   document.getElementById('gallery-modal').style.display = 'none'; // Cacher la modale
+ });
 // Fonction pour créer et afficher le footer
 function createFooter(photographer, totalLikes) {
   const footer = document.createElement('footer');
@@ -268,7 +388,19 @@ async function initPage() {
     console.error('Invalid photographer ID provided in the URL');
   }
 }
+function initializeGallery() {
+  // Sélectionner tous les éléments qui ouvriront la galerie modale
+  const mediaElements = document.querySelectorAll('.media-img');
+  
+  mediaElements.forEach((mediaElement, index) => {
+    mediaElement.addEventListener('click', () => {
+      currentMediaIndex = index; // Définir l'index actuel sur l'élément cliqué
+      displayGalleryMedia(currentPhotographerMedia[index]); // Afficher le média dans la modale
+      document.getElementById('gallery-modal').style.display = 'block'; // Afficher la modale
+    });
+  });
 
+}
 // Fonction pour créer et afficher l'en-tête du photographe
 function createPhotographHeader(photographer) {
   const main = document.getElementById('main');
@@ -346,6 +478,17 @@ document.addEventListener('DOMContentLoaded', function() {
     option.removeEventListener('click', onOptionClicked); // Assurez-vous de retirer d'abord les anciens gestionnaires d'événements
     option.addEventListener('click', onOptionClicked);
   });
+ // Attachez les gestionnaires pour les boutons de la galerie
+ const nextButton = document.querySelector('.gallery-next');
+ const prevButton = document.querySelector('.gallery-prev');
 
-  initPage();
+ if (nextButton) {
+     nextButton.addEventListener('click', nextGalleryMedia);
+ }
+
+ if (prevButton) {
+     prevButton.addEventListener('click', prevGalleryMedia);
+ }
+ initPage();
 });
+  
