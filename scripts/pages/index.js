@@ -13,6 +13,10 @@ async function getPhotographers() {
         return { photographers: [] };
     }
 }
+const images = document.getElementsByTagName('img');
+for (let i = 0; i < images.length; i++) {
+  images[i].setAttribute('tabindex', '0');
+}
 async function displayData(photographers) {
     const photographersSection = document.querySelector(".photographer_section");
 

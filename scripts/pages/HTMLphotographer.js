@@ -2,6 +2,19 @@ let totalLikesCount = 0; // Ce sera mis à jour avec le total initial des likes
 let currentMediaIndex = 0;
 let currentPhotographerMedia = []; // Cette variable doit être définie globalement
 
+// Function next gallerymedia
+function nextGalleryMedia() {
+  console.log("Current index before increment:", currentMediaIndex);
+  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
+  console.log("Current index after increment:", currentMediaIndex, "Media length:", currentPhotographerMedia.length);
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+}
+// Function prev gallery
+function prevGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+}
+
 // Fonction pour récupérer l'ID du photographe depuis l'URL
 function getPhotographerIdFromUrl() {
   const queryString = window.location.search;
@@ -78,6 +91,7 @@ function updateTotalLikesDisplay(newTotal) {
 function createLikeElement(likes, mediaId) {
   const likesContainer = document.createElement('div');
   likesContainer.className = 'likes-container';
+  likesContainer.tabIndex = 0; // Rend le conteneur focusable
 
   const likeCount = document.createElement('span');
   likeCount.textContent = likes;
@@ -91,16 +105,29 @@ function createLikeElement(likes, mediaId) {
   likesContainer.appendChild(likeCount);
   likesContainer.appendChild(heartIcon);
 
+  // Gestionnaire d'événements pour la souris
   likesContainer.addEventListener('click', function() {
-    // Incrémenter le nombre de likes pour ce média
-    const currentLikes = parseInt(likeCount.textContent, 10);
-    likeCount.textContent = currentLikes + 1;
+      // Code pour incrémenter les likes
+      incrementLikes(likeCount, mediaId);
+  });
 
-    // Recalculer et mettre à jour le total des likes
-    recalculateTotalLikes();
+  // Gestionnaire d'événements pour le clavier
+  likesContainer.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+          // Code pour incrémenter les likes
+          incrementLikes(likeCount, mediaId);
+      }
   });
 
   return likesContainer;
+}
+
+// Fonction pour incrémenter les likes
+function incrementLikes(likeCountElement, mediaId) {
+  const currentLikes = parseInt(likeCountElement.textContent, 10);
+  likeCountElement.textContent = currentLikes + 1;
+  // Ici, vous pouvez ajouter toute logique supplémentaire nécessaire, 
+  // comme la mise à jour du total des likes ou des données côté serveur
 }
 
 
@@ -108,12 +135,13 @@ function displayPhotographerMedia(media) {
   const mediaGridContainer = document.createElement('div');
   mediaGridContainer.className = 'media-grid-container';
 
-  media.forEach((m, index) => { // Assurez-vous d'ajouter l'index ici pour le référencer plus tard
+  media.forEach((m, index) => {
     const mediaElement = document.createElement('div');
     mediaElement.className = 'media-item';
 
     const mediaImgContainer = document.createElement('div');
     mediaImgContainer.className = 'media-img-container';
+    mediaImgContainer.tabIndex = 0; // Rend le conteneur focusable
 
     const mediaItem = m.image ? document.createElement('img') : document.createElement('video');
     mediaItem.alt = m.title;
@@ -128,70 +156,127 @@ function displayPhotographerMedia(media) {
       mediaItem.src = m.path; // Assurez-vous que l'image a également une source
     }
 
-    // Ajoutez un gestionnaire de clic pour ouvrir la galerie modale
-    mediaItem.addEventListener('click', function() {
-      openGalleryModal(m); // Utilisez 'index' pour ouvrir la bonne image dans la modale
-    });
+// Gestionnaire d'événements pour la souris
+mediaImgContainer.addEventListener('click', () => {
+  openGalleryModal(m);
+});
 
-    mediaImgContainer.appendChild(mediaItem);
+// Gestionnaire d'événements pour le clavier
+mediaImgContainer.addEventListener('keypress', (event) => {
+  if (event.key === 'Enter') {
+    openGalleryModal(m);
+  }
+});
 
-    const mediaDetails = document.createElement('div');
-    mediaDetails.className = 'media-details';
+mediaImgContainer.appendChild(mediaItem);
+mediaElement.appendChild(mediaImgContainer);
 
-    const titleElem = document.createElement('h3');
-    titleElem.textContent = m.title;
-    mediaDetails.appendChild(titleElem);
+const mediaDetails = document.createElement('div');
+mediaDetails.className = 'media-details';
 
-    const likesElem = createLikeElement(m.likes);
-    mediaDetails.appendChild(likesElem);
+const titleElem = document.createElement('h3');
+titleElem.textContent = m.title;
+mediaDetails.appendChild(titleElem);
 
-    mediaElement.appendChild(mediaImgContainer);
-    mediaElement.appendChild(mediaDetails);
+const likesElem = createLikeElement(m.likes, m.id); // Assurez-vous que la fonction createLikeElement accepte l'id du média
+mediaDetails.appendChild(likesElem);
 
-    mediaGridContainer.appendChild(mediaElement);
-  });
+mediaElement.appendChild(mediaDetails);
+mediaGridContainer.appendChild(mediaElement);
+});
 
-  return mediaGridContainer;
+return mediaGridContainer;
 }
 // ......GALLERY MODAL
+// Function to trap focus within a given element
+// Function to trap focus within a given element
+// Function to trap focus within the gallery modal
+function trapFocus(element) {
+  const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const firstFocusableElement = focusableElements[0];
+  const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+  function handleKeyDown(e) {
+    let isTabPressed = e.key === 'Tab';
+
+    if (!isTabPressed) {
+      return;
+    }
+
+    if (e.shiftKey) { // Si la touche Maj est enfoncée
+      if (document.activeElement === firstFocusableElement) {
+        lastFocusableElement.focus();
+        e.preventDefault();
+      }
+    } else { // Si la touche Maj n'est pas enfoncée
+      if (document.activeElement === lastFocusableElement) {
+        firstFocusableElement.focus();
+        e.preventDefault();
+      }
+    }
+  }
+
+  element.addEventListener('keydown', handleKeyDown);
+
+  // Focus on the first element
+  firstFocusableElement.focus();
+
+  // Return function to remove the event listener
+  return () => element.removeEventListener('keydown', handleKeyDown);
+}
+
+// Function to open gallery modal
 function openGalleryModal(media) {
   const galleryModal = document.getElementById('gallery-modal');
   const galleryContent = document.getElementById('gallery-content');
-  const caption = document.getElementById('caption'); // Get the caption element
+  const caption = document.getElementById('caption');
 
   // Clear previous content
   galleryContent.innerHTML = '';
 
+  let mediaElement;
   if (media.image) {
-    const imageElement = document.createElement('img');
-    imageElement.src = media.path;
-    imageElement.alt = media.title;
-    imageElement.className = 'gallery-content-img';
-    galleryContent.appendChild(imageElement);
-    caption.textContent = media.title; // Set caption text
+    mediaElement = document.createElement('img');
+    mediaElement.src = media.path;
+    mediaElement.alt = media.title;
+    mediaElement.className = 'gallery-content-img';
   } else if (media.video) {
-    const videoElement = document.createElement('video');
-    videoElement.src = media.path;
-    videoElement.alt = media.title;
-    videoElement.controls = true;
-    videoElement.className = 'gallery-content-video';
-    galleryContent.appendChild(videoElement);
-    caption.textContent = media.title; // Set caption text
+    mediaElement = document.createElement('video');
+    mediaElement.src = media.path;
+    mediaElement.alt = media.title;
+    mediaElement.controls = true;
+    mediaElement.className = 'gallery-content-video';
   }
+  galleryContent.appendChild(mediaElement);
+  caption.textContent = media.title;
 
   galleryModal.style.display = "block";
-}
-document.querySelector('.gallery-close').addEventListener('click', function() {
-  document.getElementById('gallery-modal').style.display = "none";
-});
+  const removeTrapFocus = trapFocus(galleryModal);
 
-// Pour fermer la modale en cliquant en dehors de l'image
-window.addEventListener('click', function(event) {
-  const galleryModal = document.getElementById('gallery-modal');
-  if (event.target == galleryModal) {
-    galleryModal.style.display = "none";
+  function closeGalleryModal() {
+    galleryModal.style.display = 'none';
+    removeTrapFocus();
   }
-});
+
+  const closeButton = document.querySelector('.gallery-close');
+  closeButton.addEventListener('click', closeGalleryModal);
+  closeButton.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') closeGalleryModal();
+  });
+
+  const prevButton = document.querySelector('.gallery-prev');
+  prevButton.addEventListener('click', prevGalleryMedia);
+  prevButton.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') prevGalleryMedia();
+  });
+
+  const nextButton = document.querySelector('.gallery-next');
+  nextButton.addEventListener('click', nextGalleryMedia);
+  nextButton.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') nextGalleryMedia();
+  });
+}
+
 // Fonction pour trier les médias
 // Fonction pour trier les médias en fonction de l'option sélectionnée
 function sortMedia(media, sortBy) {
@@ -220,7 +305,9 @@ function displaySortedMedia(sortedMedia) {
     mediaContainer.appendChild(displayPhotographerMedia(sortedMedia));
   }
 }
+
 let currentSortValue = 'default'; // Une valeur par défaut pour le tri
+
 // Fonction pour gérer le clic sur les options du sélecteur
 function onOptionClicked(event) {
   const option = event.target;
@@ -249,6 +336,47 @@ function updateSelectedOption(dropdown, selectedOption) {
   selectedOption.classList.add('selected');
 }
 
+
+
+
+// RENDRE CLICKABLE LES FILTRES 
+
+// Configuration des événements pour le sélecteur personnalisé
+document.addEventListener('DOMContentLoaded', () => {
+  // Code pour rendre le sélecteur focusable et gérer les événements de souris et de clavier
+  const selectTrigger = document.querySelector('.custom-select__trigger');
+  selectTrigger.tabIndex = 0; // Rend le sélecteur focusable
+
+  // Gestionnaire d'événements pour la souris
+  selectTrigger.addEventListener('click', () => {
+    toggleDropdown(selectTrigger.parentElement);
+  });
+
+  // Gestionnaire d'événements pour le clavier
+  selectTrigger.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      toggleDropdown(selectTrigger.parentElement);
+    }
+  });
+
+  // Configuration pour chaque option du sélecteur
+  const options = document.querySelectorAll('.custom-option');
+  if (options.length > 0) {
+    const firstOption = options[0];
+    firstOption.classList.add('selected');
+    selectTrigger.querySelector('span').textContent = firstOption.textContent;
+  }
+
+  options.forEach(option => {
+    option.addEventListener('click', onOptionClicked);
+    option.tabIndex = 0; // Rend chaque option focusable
+  });
+});
+
+
+
+
+
 // Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
 function toggleDropdown(dropdown) {
   const isOpen = dropdown.classList.toggle('open');
@@ -259,45 +387,63 @@ function toggleDropdown(dropdown) {
 function setArrowDirection(dropdown, isOpen) {
   const arrow = dropdown.querySelector('.arrow');
   arrow.textContent = isOpen ? '▲' : '▼';
-  arrow.style.display = 'block'; // Assurez-vous que la flèche est toujours affichée
+  arrow.style.display = 'block';
 }
 
-// Écouteurs d'événements pour le sélecteur personnalisé
-document.addEventListener('DOMContentLoaded', function() {
+// Écouteurs d'événements pour le sélecteur personnalisé et la galerie
+document.addEventListener('DOMContentLoaded', () => {
   const selectTrigger = document.querySelector('.custom-select__trigger');
   const dropdown = document.querySelector('.custom-select');
   const options = dropdown.querySelectorAll('.custom-option');
 
   selectTrigger.addEventListener('click', () => toggleDropdown(dropdown));
-
   options.forEach(option => {
-      option.addEventListener('click', onOptionClicked);
+    option.addEventListener('click', onOptionClicked);
   });
+  setArrowDirection(dropdown, false);
 
-  setArrowDirection(dropdown, false); // Initialise la flèche dans l'état fermé
+  const prevArrow = document.querySelector('.gallery-prev');
+  const nextArrow = document.querySelector('.gallery-next');
 
-  initPage(); // Appel de la fonction initPage ici pour initialiser la page
+  if (prevArrow && nextArrow) {
+    prevArrow.addEventListener('click', prevGalleryMedia);
+    nextArrow.addEventListener('click', nextGalleryMedia);
+  }
+
+  initPage();
 });
 
 // IIIIIIIIIII INIIIIITIALISER      Fonction pour initialiser la page
-// Fonction pour initialiser la page
+let isPageInitialized = false; // Variable pour suivre si la page a été initialisée
+
 async function initPage() {
+  if (isPageInitialized) {
+    return; // Si la page a déjà été initialisée, ne faites rien
+  }
+
   const photographerId = getPhotographerIdFromUrl();
   if (photographerId && isValidPhotographerId(photographerId)) {
     try {
       const photographerData = await getPhotographerData(photographerId);
       if (photographerData) {
-        // Définir les données actuelles du photographe
         currentPhotographer = photographerData;
         createPhotographHeader(currentPhotographer);
-        
-        // Récupérer et afficher les médias du photographe
+
         currentPhotographerMedia = await getPhotographerMedia(photographerId, currentPhotographer.name);
-        const mediaContainer = document.querySelector('#media-container');
-        mediaContainer.appendChild(displayPhotographerMedia(currentPhotographerMedia));
-        
-        // Initialiser la galerie une fois que les médias sont chargés
-        initializeGallery();
+        console.log("Photographer media:", currentPhotographerMedia); // Débogage
+
+        if (currentPhotographerMedia && currentPhotographerMedia.length > 0) {
+          currentMediaIndex = 0;
+          const mediaContainer = document.querySelector('#media-container');
+          mediaContainer.innerHTML = ''; // Videz le conteneur avant d'ajouter de nouveaux éléments
+          mediaContainer.appendChild(displayPhotographerMedia(currentPhotographerMedia));
+
+          // Calculez le nombre total de likes
+          const totalLikes = currentPhotographerMedia.reduce((sum, item) => sum + item.likes, 0);
+          createFooter(currentPhotographer, totalLikes);
+        } else {
+          console.error('No media found for this photographer');
+        }
       }
     } catch (error) {
       console.error('An error occurred while initializing the page:', error);
@@ -305,48 +451,9 @@ async function initPage() {
   } else {
     console.error('Invalid photographer ID provided in the URL');
   }
-}
-// Fonction pour afficher le média précédent dans la galerie
-function prevGalleryMedia() {
-  // Décrémenter l'index de média actuel
-  currentMediaIndex--;
-  if (currentMediaIndex < 0) {
-    // Si l'index est inférieur à 0, aller au dernier média
-    currentMediaIndex = currentPhotographerMedia.length - 1;
-  }
-  // Mettre à jour l'affichage avec le média précédent
-  displayGalleryMedia(currentPhotographerMedia[currentMediaIndex]);
-}
-function displayGalleryMedia(media) {
-    const galleryImage = document.getElementById('gallery-img');
-    const galleryModal = document.getElementById('gallery-modal');
-    const captionText = document.getElementById('caption');
-  if (media.image) {
-    galleryImage.src = media.path;
-    galleryImage.alt = media.title;
-    // Assurez-vous de cacher le lecteur vidéo si c'est une image
-  } else if (media.video) {
-    // Mettre à jour la source de la vidéo et montrer le lecteur vidéo
-  }
-  // Mettre à jour le texte de la légende
-  const caption = document.getElementById('caption');
-  caption.textContent = media.title;
-}
-function nextGalleryMedia() {
-  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
-  displayGalleryMedia(currentPhotographerMedia[currentMediaIndex]);
-}
 
-function prevGalleryMedia() {
-  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
-  displayGalleryMedia(currentPhotographerMedia[currentMediaIndex]);
+  isPageInitialized = true; // Marquez la page comme initialisée
 }
- // Ajouter les gestionnaires pour les boutons de navigation de la galerie
- document.querySelector('.gallery-prev').addEventListener('click', prevGalleryMedia);
- document.querySelector('.gallery-next').addEventListener('click', nextGalleryMedia);
- document.querySelector('.gallery-close').addEventListener('click', () => {
-   document.getElementById('gallery-modal').style.display = 'none'; // Cacher la modale
- });
 // Fonction pour créer et afficher le footer
 function createFooter(photographer, totalLikes) {
   const footer = document.createElement('footer');
@@ -366,41 +473,6 @@ function createFooter(photographer, totalLikes) {
   document.body.appendChild(footer);
 }
 
-// Fonction modifiée pour initialiser la page
-async function initPage() {
-  const photographerId = getPhotographerIdFromUrl();
-
-  if (photographerId && isValidPhotographerId(photographerId)) {
-    const photographer = await getPhotographerData(photographerId);
-    if (photographer) {
-      currentPhotographer = photographer;
-      createPhotographHeader(photographer);
-
-      const media = await getPhotographerMedia(photographerId, photographer.name);
-      const mediaContainer = document.querySelector('#media-container');
-      mediaContainer.appendChild(displayPhotographerMedia(media));
-
-      // Calculez le nombre total de likes
-      const totalLikes = media.reduce((sum, item) => sum + item.likes, 0);
-      createFooter(photographer, totalLikes);
-    }
-  } else {
-    console.error('Invalid photographer ID provided in the URL');
-  }
-}
-function initializeGallery() {
-  // Sélectionner tous les éléments qui ouvriront la galerie modale
-  const mediaElements = document.querySelectorAll('.media-img');
-  
-  mediaElements.forEach((mediaElement, index) => {
-    mediaElement.addEventListener('click', () => {
-      currentMediaIndex = index; // Définir l'index actuel sur l'élément cliqué
-      displayGalleryMedia(currentPhotographerMedia[index]); // Afficher le média dans la modale
-      document.getElementById('gallery-modal').style.display = 'block'; // Afficher la modale
-    });
-  });
-
-}
 // Fonction pour créer et afficher l'en-tête du photographe
 function createPhotographHeader(photographer) {
   const main = document.getElementById('main');
@@ -429,40 +501,46 @@ function createPhotographHeader(photographer) {
   const contactButton = document.createElement('button');
   contactButton.className = 'contact_button';
   contactButton.textContent = 'Contactez-moi';
-  // Attachez l'écouteur ici avec le nom du photographe
   contactButton.addEventListener('click', () => displayModal(photographer.name));
   headerSection.appendChild(contactButton);
 
   const imageContainer = document.createElement('div');
   imageContainer.className = 'image-container';
   imageContainer.id = 'photographerImageContainer';
+  imageContainer.tabIndex = 0; // Rend le conteneur focusable
+
   const img = document.createElement('img');
   img.src = `../../Sample Photos/Photographers ID Photos/${photographer.portrait}`;
   img.alt = `Portrait de ${photographer.name}`;
   imageContainer.appendChild(img);
-  headerSection.appendChild(imageContainer);
 
+  // Gestionnaire d'événements pour réagir à la touche Entrée
+  imageContainer.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      displayModal(photographer.name);
+    }
+  });
+
+  headerSection.appendChild(imageContainer);
   main.prepend(headerSection);
 }
 
-// Modifiez la fonction displayModal pour accepter un paramètre name
+// Fonction pour afficher la modale de contact
 function displayModal(photographerName) {
   const modal = document.getElementById("contact_modal");
   const photographerNameElement = document.getElementById("photographer-name-modal");
   
-  // Met à jour le contenu de l'élément avec l'id "photographer-name-modal"
   if (photographerNameElement) {
     photographerNameElement.textContent = photographerName;
   }
 
-  // Affiche la modale
   if (modal) {
     modal.style.display = "block";
   }
 }
 
 // Configuration des événements du sélecteur personnalisé
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
   const selectTrigger = document.querySelector('.custom-select__trigger');
   const options = document.querySelectorAll('.custom-option');
 
@@ -473,22 +551,45 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   selectTrigger.addEventListener('click', toggleCustomSelect);
-
   options.forEach(option => {
-    option.removeEventListener('click', onOptionClicked); // Assurez-vous de retirer d'abord les anciens gestionnaires d'événements
+    option.removeEventListener('click', onOptionClicked);
     option.addEventListener('click', onOptionClicked);
   });
- // Attachez les gestionnaires pour les boutons de la galerie
- const nextButton = document.querySelector('.gallery-next');
- const prevButton = document.querySelector('.gallery-prev');
+});
 
- if (nextButton) {
-     nextButton.addEventListener('click', nextGalleryMedia);
- }
+document.addEventListener('DOMContentLoaded', () => {
+  // Sélection des boutons
+  const closeButton = document.querySelector('.gallery-close');
+  const prevButton = document.querySelector('.gallery-prev');
+  const nextButton = document.querySelector('.gallery-next');
 
- if (prevButton) {
-     prevButton.addEventListener('click', prevGalleryMedia);
- }
- initPage();
+  // Rendre les boutons focusables
+  closeButton.tabIndex = 0;
+  prevButton.tabIndex = 0;
+  nextButton.tabIndex = 0;
+
+  // Gestionnaire d'événements pour le clavier et la souris pour le bouton de fermeture
+  closeButton.addEventListener('click', closeGalleryModal);  // Souris
+  closeButton.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+          closeGalleryModal();  // Clavier
+      }
+  });
+
+  // Gestionnaire d'événements pour le clavier et la souris pour le bouton précédent
+  prevButton.addEventListener('click', prevGalleryMedia);  // Souris
+  prevButton.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+          prevGalleryMedia();  // Clavier
+      }
+  });
+
+  // Gestionnaire d'événements pour le clavier et la souris pour le bouton suivant
+  nextButton.addEventListener('click', nextGalleryMedia);  // Souris
+  nextButton.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+          nextGalleryMedia();  // Clavier
+      }
+  });
 });
   

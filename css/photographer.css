@@ -328,17 +328,17 @@ form input {
 
 /* GALLERY STYLE !!*/
 .gallery-modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1500; /* Sit on top */
-    padding-top: 100px; /* Padding from the top */
+    display: none; /* Caché par défaut */
+    position: fixed; /* Reste en place */
+    z-index: 1500; /* Se place au-dessus */
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(255, 255, 255, 0.9); /* Black with opacity for background */
+    width: 100%; /* Largeur totale */
+    height: 100%; /* Hauteur totale */
+    overflow: auto; /* Permet le défilement si nécessaire */
+    background-color: #FFF; /* Fond blanc complètement opaque */
 }
+
 
 .gallery-close {
     position: absolute;
@@ -397,4 +397,7 @@ form input {
     border-radius: 5px; /* Rounded corners for the caption box */
     max-width: calc(100% - 40px); /* Max width with padding considered */
     box-sizing: border-box; /* Include padding and border in the width */
+}
+.no-scroll {
+    overflow: hidden;
 }
