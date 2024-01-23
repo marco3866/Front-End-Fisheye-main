@@ -306,11 +306,9 @@ function displaySortedMedia(sortedMedia) {
   }
 }
 
-let currentSortValue = 'default'; // Une valeur par défaut pour le tri
-
 // Fonction pour gérer le clic sur les options du sélecteur
 function onOptionClicked(event) {
-  const option = event.target;
+  const option = event.currentTarget; // Utilisation de currentTarget pour cibler l'élément cliqué
   const dropdown = option.closest('.custom-select');
   const triggerSpan = dropdown.querySelector('.custom-select__trigger span');
   const selectedValue = option.getAttribute('data-value');
@@ -336,6 +334,74 @@ function updateSelectedOption(dropdown, selectedOption) {
   selectedOption.classList.add('selected');
 }
 
+// Configuration des événements pour le sélecteur personnalisé
+document.addEventListener('DOMContentLoaded', () => {
+  const selectTrigger = document.querySelector('.custom-select__trigger');
+  selectTrigger.tabIndex = 0; // Rend le sélecteur focusable
+
+  selectTrigger.addEventListener('click', () => toggleDropdown(selectTrigger.parentElement));
+
+  const options = document.querySelectorAll('.custom-option');
+  options.forEach(option => {
+    option.addEventListener('click', onOptionClicked);
+    option.tabIndex = 0; // Rend chaque option focusable
+  });
+
+  setArrowDirection(selectTrigger.parentElement, false);
+});
+
+// Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
+function toggleDropdown(dropdown) {
+  const isOpen = dropdown.classList.toggle('open');
+  setArrowDirection(dropdown, isOpen);
+}
+
+// Fonction pour définir la direction de la flèche
+function setArrowDirection(dropdown, isOpen) {
+  const arrow = dropdown.querySelector('.arrow');
+  arrow.textContent = isOpen ? '▲' : '▼';
+}
+
+
+let currentSortValue = 'default'; // Une valeur par défaut pour le tri
+
+// Fonction pour gérer le clic sur les options du sélecteur
+function onOptionClicked(event) {
+  const option = event.target;
+  const dropdown = option.closest('.custom-select');
+  const triggerSpan = dropdown.querySelector('.custom-select__trigger span');
+  const selectedValue = option.getAttribute('data-value');
+
+  updateSelectedOption(dropdown, option);
+  triggerSpan.textContent = option.textContent;
+
+  const photographerId = getPhotographerIdFromUrl();
+  if (currentPhotographer) {
+    getPhotographerMedia(photographerId, currentPhotographer.name).then(media => {
+      const sortedMedia = sortMedia(media, selectedValue);
+      displaySortedMedia(sortedMedia);
+    });
+  }
+
+  dropdown.classList.remove('open');
+}
+
+// Configuration pour chaque option du sélecteur
+const options = document.querySelectorAll('.custom-option');
+options.forEach(option => {
+  // Ajout du gestionnaire d'événements pour la souris sur chaque option
+  option.addEventListener('click', onOptionClicked);
+
+  // Ajout du gestionnaire d'événements pour le clavier (touche "Entrée")
+  option.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      onOptionClicked(event);
+    }
+  });
+
+  // Rend chaque option focusable
+  option.tabIndex = 0;
+});
 
 
 
@@ -343,19 +409,23 @@ function updateSelectedOption(dropdown, selectedOption) {
 
 // Configuration des événements pour le sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', () => {
-  // Code pour rendre le sélecteur focusable et gérer les événements de souris et de clavier
+  // Sélecteur personnalisé
   const selectTrigger = document.querySelector('.custom-select__trigger');
-  selectTrigger.tabIndex = 0; // Rend le sélecteur focusable
+
+  // Rend le sélecteur focusable
+  selectTrigger.tabIndex = 0;
 
   // Gestionnaire d'événements pour la souris
   selectTrigger.addEventListener('click', () => {
-    toggleDropdown(selectTrigger.parentElement);
+    const dropdown = selectTrigger.parentElement;
+    toggleDropdown(dropdown);
   });
 
   // Gestionnaire d'événements pour le clavier
   selectTrigger.addEventListener('keypress', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
-      toggleDropdown(selectTrigger.parentElement);
+      const dropdown = selectTrigger.parentElement;
+      toggleDropdown(dropdown);
     }
   });
 
@@ -387,7 +457,6 @@ function toggleDropdown(dropdown) {
 function setArrowDirection(dropdown, isOpen) {
   const arrow = dropdown.querySelector('.arrow');
   arrow.textContent = isOpen ? '▲' : '▼';
-  arrow.style.display = 'block';
 }
 
 // Écouteurs d'événements pour le sélecteur personnalisé et la galerie
