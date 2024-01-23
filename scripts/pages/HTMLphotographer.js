@@ -2,19 +2,6 @@ let totalLikesCount = 0; // Ce sera mis à jour avec le total initial des likes
 let currentMediaIndex = 0;
 let currentPhotographerMedia = []; // Cette variable doit être définie globalement
 
-// Function next gallerymedia
-function nextGalleryMedia() {
-  console.log("Current index before increment:", currentMediaIndex);
-  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
-  console.log("Current index after increment:", currentMediaIndex, "Media length:", currentPhotographerMedia.length);
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
-}
-// Function prev gallery
-function prevGalleryMedia() {
-  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
-}
-
 // Fonction pour récupérer l'ID du photographe depuis l'URL
 function getPhotographerIdFromUrl() {
   const queryString = window.location.search;
@@ -185,9 +172,62 @@ mediaGridContainer.appendChild(mediaElement);
 return mediaGridContainer;
 }
 // ......GALLERY MODAL
-// Function to trap focus within a given element
-// Function to trap focus within a given element
 // Function to trap focus within the gallery modal
+// ......GALLERY MODAL
+// Function to trap focus within the gallery modal
+// Fonction pour nettoyer les gestionnaires d'événements
+function cleanUpGalleryEventListeners() {
+  const prevButton = document.querySelector('.gallery-prev');
+  const nextButton = document.querySelector('.gallery-next');
+
+  // Retirer les anciens gestionnaires d'événements s'ils existent
+  prevButton.removeEventListener('click', prevGalleryMedia);
+  nextButton.removeEventListener('click', nextGalleryMedia);
+}
+function handleGalleryKeydown(event) {
+  if (event.key === 'Escape') {
+    closeGalleryModal();
+  } else if (event.key === 'ArrowRight') {
+    if (currentMediaIndex < currentPhotographerMedia.length - 1) {
+      nextGalleryMedia();
+    }
+  } else if (event.key === 'ArrowLeft') {
+    if (currentMediaIndex > 0) {
+      prevGalleryMedia();
+    }
+  }
+}
+
+function updateGalleryNavigationArrows() {
+  const prevButton = document.querySelector('.gallery-prev');
+  const nextButton = document.querySelector('.gallery-next');
+
+  // Masquer la flèche gauche pour la première image
+  if (currentMediaIndex === 0) {
+    prevButton.style.display = 'none';
+  } else {
+    prevButton.style.display = 'block';
+  }
+
+  // Masquer la flèche droite pour la dernière image
+  if (currentMediaIndex === currentPhotographerMedia.length - 1) {
+    nextButton.style.display = 'none';
+  } else {
+    nextButton.style.display = 'block';
+  }
+}
+
+function nextGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+  updateGalleryNavigationArrows();
+}
+
+function prevGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+  updateGalleryNavigationArrows();
+}
 function trapFocus(element) {
   const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
   const firstFocusableElement = focusableElements[0];
@@ -222,15 +262,18 @@ function trapFocus(element) {
   return () => element.removeEventListener('keydown', handleKeyDown);
 }
 
-// Function to open gallery modal
+// Fonction pour ouvrir la modale de la galerie
 function openGalleryModal(media) {
+  // Appel à la fonction de nettoyage des gestionnaires d'événements
+  cleanUpGalleryEventListeners();
+
   const galleryModal = document.getElementById('gallery-modal');
   const galleryContent = document.getElementById('gallery-content');
   const caption = document.getElementById('caption');
 
-  // Clear previous content
+  // Vider le contenu précédent
   galleryContent.innerHTML = '';
-
+  document.addEventListener('keydown', handleGalleryKeydown);
   let mediaElement;
   if (media.image) {
     mediaElement = document.createElement('img');
@@ -272,7 +315,9 @@ function openGalleryModal(media) {
   nextButton.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') nextGalleryMedia();
   });
-}
+}   
+// FIN MODALE !!!!!!
+
 
 // Fonction pour trier les médias
 // Fonction pour trier les médias en fonction de l'option sélectionnée
@@ -441,9 +486,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
-
-
 // Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
 function toggleDropdown(dropdown) {
   const isOpen = dropdown.classList.toggle('open');
@@ -455,6 +497,8 @@ function setArrowDirection(dropdown, isOpen) {
   const arrow = dropdown.querySelector('.arrow');
   arrow.textContent = isOpen ? '▲' : '▼';
 }
+
+// FINNNNNNNN TRIERRRRRRRRRR
 
 // Écouteurs d'événements pour le sélecteur personnalisé et la galerie
 document.addEventListener('DOMContentLoaded', () => {
@@ -468,16 +512,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   setArrowDirection(dropdown, false);
 
-  const prevArrow = document.querySelector('.gallery-prev');
-  const nextArrow = document.querySelector('.gallery-next');
-
-  if (prevArrow && nextArrow) {
-    prevArrow.addEventListener('click', prevGalleryMedia);
-    nextArrow.addEventListener('click', nextGalleryMedia);
-  }
-
   initPage();
 });
+
 
 // IIIIIIIIIII INIIIIITIALISER      Fonction pour initialiser la page
 let isPageInitialized = false; // Variable pour suivre si la page a été initialisée
@@ -623,39 +660,4 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Sélection des boutons
-  const closeButton = document.querySelector('.gallery-close');
-  const prevButton = document.querySelector('.gallery-prev');
-  const nextButton = document.querySelector('.gallery-next');
-
-  // Rendre les boutons focusables
-  closeButton.tabIndex = 0;
-  prevButton.tabIndex = 0;
-  nextButton.tabIndex = 0;
-
-  // Gestionnaire d'événements pour le clavier et la souris pour le bouton de fermeture
-  closeButton.addEventListener('click', closeGalleryModal);  // Souris
-  closeButton.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
-          closeGalleryModal();  // Clavier
-      }
-  });
-
-  // Gestionnaire d'événements pour le clavier et la souris pour le bouton précédent
-  prevButton.addEventListener('click', prevGalleryMedia);  // Souris
-  prevButton.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
-          prevGalleryMedia();  // Clavier
-      }
-  });
-
-  // Gestionnaire d'événements pour le clavier et la souris pour le bouton suivant
-  nextButton.addEventListener('click', nextGalleryMedia);  // Souris
-  nextButton.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
-          nextGalleryMedia();  // Clavier
-      }
-  });
-});
   
