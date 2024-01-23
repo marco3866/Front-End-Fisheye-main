@@ -68,7 +68,6 @@ function getMediaPath(media, photographerName) {
   return media.image ? `../../Sample Photos/${firstName}/${media.image}` :
          media.video ? `../../Sample Photos/${firstName}/${media.video}` : '';
 }
-
 // Fonction pour recalculer et mettre à jour le total des likes
 function recalculateTotalLikes() {
   let newTotalLikes = 0;
@@ -107,16 +106,14 @@ function createLikeElement(likes, mediaId) {
 
   // Gestionnaire d'événements pour la souris
   likesContainer.addEventListener('click', function() {
-      // Code pour incrémenter les likes
-      incrementLikes(likeCount, mediaId);
+    incrementLikes(likeCount, mediaId);
   });
 
   // Gestionnaire d'événements pour le clavier
   likesContainer.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
-          // Code pour incrémenter les likes
-          incrementLikes(likeCount, mediaId);
-      }
+    if (event.key === 'Enter') {
+      incrementLikes(likeCount, mediaId);
+    }
   });
 
   return likesContainer;
@@ -126,10 +123,10 @@ function createLikeElement(likes, mediaId) {
 function incrementLikes(likeCountElement, mediaId) {
   const currentLikes = parseInt(likeCountElement.textContent, 10);
   likeCountElement.textContent = currentLikes + 1;
-  // Ici, vous pouvez ajouter toute logique supplémentaire nécessaire, 
-  // comme la mise à jour du total des likes ou des données côté serveur
-}
 
+  // Appel de la fonction pour recalculer et mettre à jour le total des likes
+  recalculateTotalLikes();
+}
 
 function displayPhotographerMedia(media) {
   const mediaGridContainer = document.createElement('div');
