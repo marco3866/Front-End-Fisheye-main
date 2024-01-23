@@ -172,108 +172,36 @@ mediaGridContainer.appendChild(mediaElement);
 return mediaGridContainer;
 }
 // ......GALLERY MODAL
-// Function to trap focus within the gallery modal
-// ......GALLERY MODAL
-// Function to trap focus within the gallery modal
+// Fonction pour nettoyer les gestionnaires d'événements
 // Fonction pour nettoyer les gestionnaires d'événements
 function cleanUpGalleryEventListeners() {
   const prevButton = document.querySelector('.gallery-prev');
   const nextButton = document.querySelector('.gallery-next');
 
-  // Retirer les anciens gestionnaires d'événements s'ils existent
   prevButton.removeEventListener('click', prevGalleryMedia);
   nextButton.removeEventListener('click', nextGalleryMedia);
 }
+
+// Fonction pour gérer les touches du clavier dans la galerie
 function handleGalleryKeydown(event) {
   if (event.key === 'Escape') {
     closeGalleryModal();
   } else if (event.key === 'ArrowRight') {
-    if (currentMediaIndex < currentPhotographerMedia.length - 1) {
-      nextGalleryMedia();
-    }
+    nextGalleryMedia();
   } else if (event.key === 'ArrowLeft') {
-    if (currentMediaIndex > 0) {
-      prevGalleryMedia();
-    }
+    prevGalleryMedia();
   }
-}
-
-function updateGalleryNavigationArrows() {
-  const prevButton = document.querySelector('.gallery-prev');
-  const nextButton = document.querySelector('.gallery-next');
-
-  // Masquer la flèche gauche pour la première image
-  if (currentMediaIndex === 0) {
-    prevButton.style.display = 'none';
-  } else {
-    prevButton.style.display = 'block';
-  }
-
-  // Masquer la flèche droite pour la dernière image
-  if (currentMediaIndex === currentPhotographerMedia.length - 1) {
-    nextButton.style.display = 'none';
-  } else {
-    nextButton.style.display = 'block';
-  }
-}
-
-function nextGalleryMedia() {
-  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
-  updateGalleryNavigationArrows();
-}
-
-function prevGalleryMedia() {
-  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
-  updateGalleryNavigationArrows();
-}
-function trapFocus(element) {
-  const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-  const firstFocusableElement = focusableElements[0];
-  const lastFocusableElement = focusableElements[focusableElements.length - 1];
-
-  function handleKeyDown(e) {
-    let isTabPressed = e.key === 'Tab';
-
-    if (!isTabPressed) {
-      return;
-    }
-
-    if (e.shiftKey) { // Si la touche Maj est enfoncée
-      if (document.activeElement === firstFocusableElement) {
-        lastFocusableElement.focus();
-        e.preventDefault();
-      }
-    } else { // Si la touche Maj n'est pas enfoncée
-      if (document.activeElement === lastFocusableElement) {
-        firstFocusableElement.focus();
-        e.preventDefault();
-      }
-    }
-  }
-
-  element.addEventListener('keydown', handleKeyDown);
-
-  // Focus on the first element
-  firstFocusableElement.focus();
-
-  // Return function to remove the event listener
-  return () => element.removeEventListener('keydown', handleKeyDown);
 }
 
 // Fonction pour ouvrir la modale de la galerie
 function openGalleryModal(media) {
-  // Appel à la fonction de nettoyage des gestionnaires d'événements
   cleanUpGalleryEventListeners();
 
   const galleryModal = document.getElementById('gallery-modal');
   const galleryContent = document.getElementById('gallery-content');
   const caption = document.getElementById('caption');
-
-  // Vider le contenu précédent
   galleryContent.innerHTML = '';
-  document.addEventListener('keydown', handleGalleryKeydown);
+
   let mediaElement;
   if (media.image) {
     mediaElement = document.createElement('img');
@@ -293,10 +221,7 @@ function openGalleryModal(media) {
   galleryModal.style.display = "block";
   const removeTrapFocus = trapFocus(galleryModal);
 
-  function closeGalleryModal() {
-    galleryModal.style.display = 'none';
-    removeTrapFocus();
-  }
+  document.addEventListener('keydown', handleGalleryKeydown);
 
   const closeButton = document.querySelector('.gallery-close');
   closeButton.addEventListener('click', closeGalleryModal);
@@ -304,18 +229,79 @@ function openGalleryModal(media) {
     if (e.key === 'Enter') closeGalleryModal();
   });
 
-  const prevButton = document.querySelector('.gallery-prev');
-  prevButton.addEventListener('click', prevGalleryMedia);
-  prevButton.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') prevGalleryMedia();
-  });
+  updateGalleryNavigationArrows();
+}
 
+// Fonction pour fermer la modale de la galerie
+function closeGalleryModal() {
+  const galleryModal = document.getElementById('gallery-modal');
+  if (galleryModal) {
+    galleryModal.style.display = 'none';
+    document.removeEventListener('keydown', handleGalleryKeydown);
+  }
+}
+
+// Fonction pour mettre à jour la visibilité des flèches de navigation
+function updateGalleryNavigationArrows() {
+  const prevButton = document.querySelector('.gallery-prev');
   const nextButton = document.querySelector('.gallery-next');
-  nextButton.addEventListener('click', nextGalleryMedia);
-  nextButton.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') nextGalleryMedia();
-  });
-}   
+
+  if (currentMediaIndex === 0) {
+    prevButton.style.display = 'none';
+  } else {
+    prevButton.style.display = 'block';
+  }
+
+  if (currentMediaIndex === currentPhotographerMedia.length - 1) {
+    nextButton.style.display = 'none';
+  } else {
+    nextButton.style.display = 'block';
+  }
+}
+
+// Fonction pour naviguer à l'image suivante
+function nextGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+}
+
+// Fonction pour naviguer à l'image précédente
+function prevGalleryMedia() {
+  currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+}
+
+// Fonction pour piéger le focus dans la modale
+function trapFocus(element) {
+  const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const firstFocusableElement = focusableElements[0];
+  const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+  function handleKeyDown(e) {
+    let isTabPressed = e.key === 'Tab';
+
+    if (!isTabPressed) {
+      return;
+    }
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstFocusableElement) {
+        lastFocusableElement.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastFocusableElement) {
+        firstFocusableElement.focus();
+        e.preventDefault();
+      }
+    }
+  }
+
+  element.addEventListener('keydown', handleKeyDown);
+  firstFocusableElement.focus();
+  return () => element.removeEventListener('keydown', handleKeyDown);
+}
+
 // FIN MODALE !!!!!!
 
 
