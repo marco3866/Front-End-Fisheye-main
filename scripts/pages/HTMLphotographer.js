@@ -6,30 +6,43 @@ let currentPhotographerMedia = []; // Cette variable doit être définie globale
 function getPhotographerIdFromUrl() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
-  return urlParams.get('id');
+  const photographerId = urlParams.get('id');
+  console.log(`Photographer ID from URL: ${photographerId}`); // Log de l'ID récupéré
+  return photographerId;
 }
 
 // Fonction pour valider l'ID du photographe
 function isValidPhotographerId(id) {
-  return id && !isNaN(parseInt(id));
+  const isValid = id && !isNaN(parseInt(id));
+  console.log(`Is Photographer ID valid: ${isValid}`); // Log de la validation de l'ID
+  return isValid;
 }
 
 // Fonction pour effectuer une requête HTTP et gérer les erreurs
 async function fetchJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log('Data fetched successfully:', data); // Log des données récupérées
+    return data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return null;
   }
-  return response.json();
 }
 
 // Fonction pour charger les données du photographe
 async function getPhotographerData(photographerId) {
   try {
     const data = await fetchJson('../photographers.json');
-    return data.photographers.find(p => p.id.toString() === photographerId);
+    const photographerData = data.photographers.find(p => p.id.toString() === photographerId);
+    console.log('Photographer data:', photographerData); // Log des données du photographe
+    return photographerData;
   } catch (error) {
-    console.error('Erreur lors de la récupération des données:', error);
+    console.error('Error getting photographer data:', error);
     return null;
   }
 }

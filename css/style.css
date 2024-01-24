@@ -73,3 +73,6 @@ h1 {
     height: 100%; 
     transform: scale(1.2); /* Zoom de 20% sur l'image */
 }
+.photographer-section article:focus, .photographer-section article:hover {
+    outline: 2px solid #901C1C; /* ou tout autre style de votre choix */
+}

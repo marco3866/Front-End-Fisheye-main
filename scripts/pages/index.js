@@ -17,23 +17,44 @@ const images = document.getElementsByTagName('img');
 for (let i = 0; i < images.length; i++) {
   images[i].setAttribute('tabindex', '0');
 }
-async function displayData(photographers) {
+function displayData(photographers) {
     const photographersSection = document.querySelector(".photographer_section");
 
     photographers.forEach((photographer) => {
         const photographerModel = photographerTemplate(photographer);
         const userCardDOM = photographerModel.getUserCardDOM();
+
+        userCardDOM.classList.add('photographer-profile');
+        userCardDOM.dataset.photographerId = photographer.id;
+
+        // Ajouter aria-label avec les informations du photographe pour l'accessibilité
+        userCardDOM.setAttribute('aria-label', `Lien vers le photographe ${photographer.name}, situé à ${photographer.city}. Tarif : ${photographer.price}€ par jour.`);
+
         photographersSection.appendChild(userCardDOM);
     });
+
+    // Ajouter la navigation clavier après avoir ajouté tous les éléments de photographe
+    addKeyboardNavigationToPhotographers();
 }
 
 async function init() {
-    // Récupère les datas des photographes
     const { photographers } = await getPhotographers();
     displayData(photographers);
 }
 
-window.addEventListener('DOMContentLoaded', (event) => {
-    init();
-});
+window.addEventListener('DOMContentLoaded', init);
 
+// Ajout de la navigation avec Tab et la sélection avec Entrée
+function addKeyboardNavigationToPhotographers() {
+    const photographerElements = document.querySelectorAll('.photographer-profile');
+
+    photographerElements.forEach(element => {
+        element.setAttribute('tabindex', '0');
+        element.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                const photographerId = element.getAttribute('data-photographer-id');
+                window.location.href = `photographer.html?id=${photographerId}`;
+            }
+        });
+    });
+}
