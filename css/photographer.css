@@ -177,15 +177,17 @@ form input {
 
 .custom-select {
     position: relative;
-    display: flex;
-    flex-direction: column;
+    width: 200px; /* Ajustez cette largeur comme nécessaire */
     background-color: #b52e31;
     border-radius: 5px;
     cursor: pointer;
     padding: 10px 15px;
     color: white;
     font-weight: bold;
+    text-align: left; /* Alignez le texte à gauche */
+    margin-left: 70px;
 }
+
 
 .custom-select__trigger {
     display: flex;

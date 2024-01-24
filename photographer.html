@@ -16,24 +16,19 @@
   <main id="main">
     <!-- La section photograph-header sera créée et ajoutée par le script JavaScript -->
 
-    <!-- Filtre de triage -->
-    <section class="filter-container">
-      <span class="filter-label">Trier par :</span>
-      <div class="custom-select-wrapper">
-        <div class="custom-select">
-          <div class="custom-select__trigger">
-            <span>Popularité</span>
-            <div class="arrow arrow-down"></div>
-          </div>
-          <div class="custom-options">
-            <span class="custom-option" data-value="likes">Popularité</span>
-            <span class="custom-option" data-value="date">Date</span>
-            <span class="custom-option" data-value="title">Titre</span>
-          </div>
-        </div>
-      </div>
-    </section>
-    <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<!-- Sélecteur personnalisé avec ARIA pour l'accessibilité -->
+<div class="custom-select" aria-label="cliquer pour trier" role="listbox">
+  <div class="custom-select__trigger" aria-haspopup="true" aria-expanded="false" tabindex="0">
+    <span>Trier par :</span>
+    <div class="arrow"></div>
+  </div>
+  <ul class="custom-options">
+    <li class="custom-option" data-value="popularity" role="option" tabindex="0">Popularité</li>
+    <li class="custom-option" data-value="date" role="option" tabindex="0">Date</li>
+    <li class="custom-option" data-value="title" role="option" tabindex="0">Titre</li>
+  </ul>
+</div>
+
     <!-- Conteneur spécifique pour les médias -->
     <section id="media-container">
       <!-- Les médias triés seront affichés ici -->
@@ -67,12 +62,12 @@
   </div>
 </div>
 <!-- Gallery Modal -->
-<div id="gallery-modal" class="gallery-modal">
+<div id="gallery-modal" class="gallery-modal" aria-labelledby="caption" aria-hidden="true" role="dialog">
   <!-- Close button -->
-  <span class="gallery-close" onclick="closeGalleryModal()">&times;</span>
+  <button class="gallery-close" aria-label="Fermer la vue agrandie" onclick="closeGalleryModal()">&times;</button>
 
   <!-- Previous media button -->
-  <span class="gallery-prev" onclick="prevGalleryMedia()">&#10094;</span>
+  <button class="gallery-prev" aria-label="Média précédent" onclick="prevGalleryMedia()">&#10094;</button>
 
   <!-- Gallery content container -->
   <div id="gallery-content" class="gallery-content">
@@ -80,7 +75,7 @@
   </div>
 
   <!-- Next media button -->
-  <span class="gallery-next" onclick="nextGalleryMedia()">&#10095;</span>
+  <button class="gallery-next" aria-label="Média suivant" onclick="nextGalleryMedia()">&#10095;</button>
 
   <!-- Caption for the image or video -->
   <div id="caption" class="caption"></div>

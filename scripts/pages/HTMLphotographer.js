@@ -133,57 +133,60 @@ function displayPhotographerMedia(media) {
   mediaGridContainer.className = 'media-grid-container';
 
   media.forEach((m, index) => {
-    const mediaElement = document.createElement('div');
-    mediaElement.className = 'media-item';
+      const mediaElement = document.createElement('div');
+      mediaElement.className = 'media-item';
 
-    const mediaImgContainer = document.createElement('div');
-    mediaImgContainer.className = 'media-img-container';
-    mediaImgContainer.tabIndex = 0; // Rend le conteneur focusable
+      const mediaImgContainer = document.createElement('div');
+      mediaImgContainer.className = 'media-img-container';
+      mediaImgContainer.tabIndex = 0; // Rend le conteneur focusable
+      mediaImgContainer.setAttribute('role', 'button'); // Ajout du rôle de bouton pour accessibilité
+      mediaImgContainer.setAttribute('aria-label', `Afficher ${m.title} en grand`); // Description pour lecteurs d'écran
 
-    const mediaItem = m.image ? document.createElement('img') : document.createElement('video');
-    mediaItem.alt = m.title;
-    mediaItem.className = 'media-img';
-    if (m.video) {
-      const videoSource = document.createElement('source');
-      videoSource.src = m.path;
-      videoSource.type = 'video/mp4'; // Assurez-vous que le type est correct en fonction du format de la vidéo
-      mediaItem.appendChild(videoSource);
-      mediaItem.controls = true;
-    } else {
-      mediaItem.src = m.path; // Assurez-vous que l'image a également une source
-    }
+      const mediaItem = m.image ? document.createElement('img') : document.createElement('video');
+      mediaItem.alt = m.title;
+      mediaItem.className = 'media-img';
+      if (m.video) {
+          const videoSource = document.createElement('source');
+          videoSource.src = m.path;
+          videoSource.type = 'video/mp4';
+          mediaItem.appendChild(videoSource);
+          mediaItem.controls = true;
+      } else {
+          mediaItem.src = m.path;
+      }
 
-// Gestionnaire d'événements pour la souris
-mediaImgContainer.addEventListener('click', () => {
-  openGalleryModal(m, index); // Passez l'index ici
-});
+      // Gestionnaire d'événements pour la souris
+      mediaImgContainer.addEventListener('click', () => {
+          openGalleryModal(m, index);
+      });
 
-// Gestionnaire d'événements pour le clavier
-mediaImgContainer.addEventListener('keypress', (event) => {
-  if (event.key === 'Enter') {
-    openGalleryModal(m);
-  }
-});
+      // Gestionnaire d'événements pour le clavier
+      mediaImgContainer.addEventListener('keypress', (event) => {
+          if (event.key === 'Enter') {
+              openGalleryModal(m, index);
+          }
+      });
 
-mediaImgContainer.appendChild(mediaItem);
-mediaElement.appendChild(mediaImgContainer);
+      mediaImgContainer.appendChild(mediaItem);
+      mediaElement.appendChild(mediaImgContainer);
 
-const mediaDetails = document.createElement('div');
-mediaDetails.className = 'media-details';
+      const mediaDetails = document.createElement('div');
+      mediaDetails.className = 'media-details';
 
-const titleElem = document.createElement('h3');
-titleElem.textContent = m.title;
-mediaDetails.appendChild(titleElem);
+      const titleElem = document.createElement('h3');
+      titleElem.textContent = m.title;
+      mediaDetails.appendChild(titleElem);
 
-const likesElem = createLikeElement(m.likes, m.id); // Assurez-vous que la fonction createLikeElement accepte l'id du média
-mediaDetails.appendChild(likesElem);
+      const likesElem = createLikeElement(m.likes, m.id);
+      mediaDetails.appendChild(likesElem);
 
-mediaElement.appendChild(mediaDetails);
-mediaGridContainer.appendChild(mediaElement);
-});
+      mediaElement.appendChild(mediaDetails);
+      mediaGridContainer.appendChild(mediaElement);
+  });
 
-return mediaGridContainer;
+  return mediaGridContainer;
 }
+
 // ......GALLERY MODAL
 // Fonction pour nettoyer les gestionnaires d'événements
 // Fonction pour nettoyer les gestionnaires d'événements
@@ -206,8 +209,8 @@ function handleGalleryKeydown(event) {
   }
 }
 
+// Fonction pour ouvrir la modale de la galerie et annoncer la photo ou la vidéo en grand
 function openGalleryModal(media, index) {
-  // Mettre à jour l'index actuel du média
   currentMediaIndex = index;
   cleanUpGalleryEventListeners();
 
@@ -222,29 +225,32 @@ function openGalleryModal(media, index) {
     mediaElement.src = media.path;
     mediaElement.alt = media.title;
     mediaElement.className = 'gallery-content-img';
+    mediaElement.setAttribute('role', 'img');
+    mediaElement.setAttribute('aria-label', `Image agrandie : ${media.title}`);
   } else if (media.video) {
     mediaElement = document.createElement('video');
     mediaElement.src = media.path;
     mediaElement.alt = media.title;
     mediaElement.controls = true;
     mediaElement.className = 'gallery-content-video';
+    mediaElement.setAttribute('role', 'video');
+    mediaElement.setAttribute('aria-label', `Vidéo agrandie : ${media.title}`);
   }
   galleryContent.appendChild(mediaElement);
   caption.textContent = media.title;
 
   galleryModal.style.display = "block";
-  const removeTrapFocus = trapFocus(galleryModal);
+  galleryModal.setAttribute('aria-modal', 'true');
+  galleryModal.setAttribute('role', 'dialog');
+  galleryModal.setAttribute('aria-labelledby', caption.id);
+
+  trapFocus(galleryModal);
 
   document.addEventListener('keydown', handleGalleryKeydown);
 
-  const closeButton = document.querySelector('.gallery-close');
-  closeButton.addEventListener('click', closeGalleryModal);
-  closeButton.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') closeGalleryModal();
-  });
-
   updateGalleryNavigationArrows();
 }
+
 
 // Fonction pour fermer la modale de la galerie
 function closeGalleryModal() {
@@ -358,8 +364,8 @@ function onOptionClicked(event) {
   triggerSpan.textContent = option.textContent;
 
   const photographerId = getPhotographerIdFromUrl();
-  if (currentPhotographer) {
-    getPhotographerMedia(photographerId, currentPhotographer.name).then(media => {
+  if (photographerId) {
+    getPhotographerMedia(photographerId).then(media => {
       const sortedMedia = sortMedia(media, selectedValue);
       displaySortedMedia(sortedMedia);
     });
@@ -368,24 +374,39 @@ function onOptionClicked(event) {
   dropdown.classList.remove('open');
 }
 
-// Fonction pour mettre à jour l'option sélectionnée dans le sélecteur
+// Fonction pour mettre à jour l'option sélectionnée dans le sélecteur et l'annonce d'accessibilité
 function updateSelectedOption(dropdown, selectedOption) {
   const options = dropdown.querySelectorAll('.custom-option');
-  options.forEach(opt => opt.classList.remove('selected'));
+  options.forEach(opt => {
+    opt.classList.remove('selected');
+    opt.setAttribute('aria-selected', 'false');
+  });
+
   selectedOption.classList.add('selected');
+  selectedOption.setAttribute('aria-selected', 'true');
+  // Annonce vocale pour les lecteurs d'écran
+  selectedOption.setAttribute('aria-label', `Trié par ${selectedOption.textContent}`);
 }
 
 // Configuration des événements pour le sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', () => {
   const selectTrigger = document.querySelector('.custom-select__trigger');
-  selectTrigger.tabIndex = 0; // Rend le sélecteur focusable
+  // Rend le sélecteur focusable
+  selectTrigger.tabIndex = 0;
 
-  selectTrigger.addEventListener('click', () => toggleDropdown(selectTrigger.parentElement));
+  selectTrigger.addEventListener('click', () => {
+    toggleDropdown(selectTrigger.parentElement);
+    // Mise à jour de l'aria-label pour l'accessibilité
+    selectTrigger.setAttribute('aria-label', selectTrigger.getAttribute('aria-expanded') === 'true' ? "Cliquez pour fermer le menu de tri" : "Cliquez pour ouvrir le menu de tri");
+  });
 
   const options = document.querySelectorAll('.custom-option');
   options.forEach(option => {
     option.addEventListener('click', onOptionClicked);
-    option.tabIndex = 0; // Rend chaque option focusable
+    // Rend chaque option focusable
+    option.tabIndex = 0;
+    // Mise à jour de l'aria-label pour l'accessibilité
+    option.setAttribute('aria-label', `Trié par ${option.textContent}`);
   });
 
   setArrowDirection(selectTrigger.parentElement, false);
@@ -394,7 +415,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
 function toggleDropdown(dropdown) {
   const isOpen = dropdown.classList.toggle('open');
-  setArrowDirection(dropdown, isOpen);
+  const arrow = dropdown.querySelector('.arrow');
+  const trigger = dropdown.querySelector('.custom-select__trigger');
+  trigger.setAttribute('aria-expanded', isOpen.toString());
+  arrow.textContent = isOpen ? '▲' : '▼';
 }
 
 // Fonction pour définir la direction de la flèche
