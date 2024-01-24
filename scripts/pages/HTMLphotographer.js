@@ -142,7 +142,7 @@ function displayPhotographerMedia(media) {
 
 // Gestionnaire d'événements pour la souris
 mediaImgContainer.addEventListener('click', () => {
-  openGalleryModal(m);
+  openGalleryModal(m, index); // Passez l'index ici
 });
 
 // Gestionnaire d'événements pour le clavier
@@ -193,8 +193,9 @@ function handleGalleryKeydown(event) {
   }
 }
 
-// Fonction pour ouvrir la modale de la galerie
-function openGalleryModal(media) {
+function openGalleryModal(media, index) {
+  // Mettre à jour l'index actuel du média
+  currentMediaIndex = index;
   cleanUpGalleryEventListeners();
 
   const galleryModal = document.getElementById('gallery-modal');
@@ -262,13 +263,12 @@ function updateGalleryNavigationArrows() {
 // Fonction pour naviguer à l'image suivante
 function nextGalleryMedia() {
   currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex], currentMediaIndex);
 }
 
-// Fonction pour naviguer à l'image précédente
 function prevGalleryMedia() {
   currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex]);
+  openGalleryModal(currentPhotographerMedia[currentMediaIndex], currentMediaIndex);
 }
 
 // Fonction pour piéger le focus dans la modale
