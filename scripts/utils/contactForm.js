@@ -1,17 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Attach click event to the 'Contact Me' button
     const contactButton = document.querySelector('.contact_button');
     if (contactButton) {
         contactButton.addEventListener('click', function() {
-            displayModal('Nom du Photographe'); // Replace with the real photographer's name
+            displayModal('Nom du Photographe');
         });
     }
 
-    // Attach click event to the close button
     const closeButton = document.querySelector(".close");
     if (closeButton) {
         closeButton.addEventListener('click', closeModal);
-        closeButton.tabIndex = 0; // Make the close button focusable
+        closeButton.tabIndex = 0;
         closeButton.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 closeModal();
@@ -19,25 +17,27 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Event listener to close the modal with the Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeModal();
         }
     });
+
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', handleFormSubmit);
+    }
 });
 
 function displayModal(photographerName) {
     const modal = document.getElementById("contact_modal");
     const photographerNameElement = document.getElementById("photographer-name-modal");
-
     if (photographerNameElement) {
         photographerNameElement.textContent = photographerName;
     }
-
     if (modal) {
         modal.style.display = "block";
-        trapFocus(modal); // Call trapFocus function for the modal
+        trapFocus(modal);
     }
 }
 
@@ -48,34 +48,42 @@ function closeModal() {
     }
 }
 
-// Function to trap focus within the modal
+function handleFormSubmit(event) {
+    event.preventDefault();
+    const firstName = document.getElementById('first-name').value;
+    const lastName = document.getElementById('last-name').value;
+    const email = document.getElementById('email').value;
+    const message = document.getElementById('message').value;
+
+    console.log('Prénom:', firstName);
+    console.log('Nom:', lastName);
+    console.log('Email:', email);
+    console.log('Message:', message);
+
+    closeModal();
+}
+
 function trapFocus(element) {
     const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     const firstFocusableElement = focusableElements[0];
     const lastFocusableElement = focusableElements[focusableElements.length - 1];
-
     function handleKeyDown(e) {
-        let isTabPressed = e.key === 'Tab' || e.keyCode === 9;
-
+        let isTabPressed = e.key === 'Tab';
         if (!isTabPressed) {
             return;
         }
-
-        if (e.shiftKey) { // If the Shift key is pressed
+        if (e.shiftKey) {
             if (document.activeElement === firstFocusableElement) {
                 lastFocusableElement.focus();
                 e.preventDefault();
             }
-        } else { // If the Shift key is not pressed
+        } else {
             if (document.activeElement === lastFocusableElement) {
                 firstFocusableElement.focus();
                 e.preventDefault();
             }
         }
     }
-
     element.addEventListener('keydown', handleKeyDown);
-
-    // Return a function to remove the event listener
     return () => element.removeEventListener('keydown', handleKeyDown);
 }

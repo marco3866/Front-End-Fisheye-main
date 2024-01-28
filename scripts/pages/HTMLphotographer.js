@@ -654,7 +654,6 @@ document.addEventListener('DOMContentLoaded', () => {
     selectTrigger.querySelector('span').textContent = firstOption.textContent;
   }
 
-  selectTrigger.addEventListener('click', toggleCustomSelect);
   options.forEach(option => {
     option.removeEventListener('click', onOptionClicked);
     option.addEventListener('click', onOptionClicked);
