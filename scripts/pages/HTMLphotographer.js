@@ -1,6 +1,7 @@
 let totalLikesCount = 0; // Ce sera mis à jour avec le total initial des likes
 let currentMediaIndex = 0;
 let currentPhotographerMedia = []; // Cette variable doit être définie globalement
+let indexMap = {};
 
 // Fonction pour récupérer l'ID du photographe depuis l'URL
 function getPhotographerIdFromUrl() {
@@ -187,15 +188,15 @@ function displayPhotographerMedia(media) {
   return mediaGridContainer;
 }
 
-// ......GALLERY MODAL
-// Fonction pour nettoyer les gestionnaires d'événements
-// Fonction pour nettoyer les gestionnaires d'événements
+// GALLERY MODAL SCRIPT
+
+// Fonction pour nettoyer les gestionnaires d'événements de la galerie
 function cleanUpGalleryEventListeners() {
   const prevButton = document.querySelector('.gallery-prev');
   const nextButton = document.querySelector('.gallery-next');
 
-  prevButton.removeEventListener('click', prevGalleryMedia);
-  nextButton.removeEventListener('click', nextGalleryMedia);
+  if (prevButton) prevButton.removeEventListener('click', prevGalleryMedia);
+  if (nextButton) nextButton.removeEventListener('click', nextGalleryMedia);
 }
 
 // Fonction pour gérer les touches du clavier dans la galerie
@@ -209,9 +210,13 @@ function handleGalleryKeydown(event) {
   }
 }
 
-// Fonction pour ouvrir la modale de la galerie et annoncer la photo ou la vidéo en grand
+// Fonction pour ouvrir la modale de la galerie et afficher les médias
 function openGalleryModal(media, index) {
-  currentMediaIndex = index;
+  // Mise à jour de l'index actuel en fonction de la cartographie après le tri
+  currentMediaIndex = indexMap.hasOwnProperty(index) ? indexMap[index] : index;
+  
+  console.log(`Ouverture du média numéro ${currentMediaIndex}: ${media.title}`); // Log pour le débogage
+
   cleanUpGalleryEventListeners();
 
   const galleryModal = document.getElementById('gallery-modal');
@@ -251,7 +256,6 @@ function openGalleryModal(media, index) {
   updateGalleryNavigationArrows();
 }
 
-
 // Fonction pour fermer la modale de la galerie
 function closeGalleryModal() {
   const galleryModal = document.getElementById('gallery-modal');
@@ -266,28 +270,24 @@ function updateGalleryNavigationArrows() {
   const prevButton = document.querySelector('.gallery-prev');
   const nextButton = document.querySelector('.gallery-next');
 
-  if (currentMediaIndex === 0) {
-    prevButton.style.display = 'none';
-  } else {
-    prevButton.style.display = 'block';
-  }
-
-  if (currentMediaIndex === currentPhotographerMedia.length - 1) {
-    nextButton.style.display = 'none';
-  } else {
-    nextButton.style.display = 'block';
-  }
+  prevButton.style.display = currentMediaIndex === 0 ? 'none' : 'block';
+  nextButton.style.display = currentMediaIndex === currentPhotographerMedia.length - 1 ? 'none' : 'block';
 }
 
-// Fonction pour naviguer à l'image suivante
+// Fonction pour naviguer au média suivant
 function nextGalleryMedia() {
   currentMediaIndex = (currentMediaIndex + 1) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex], currentMediaIndex);
+  const nextMedia = currentPhotographerMedia[currentMediaIndex];
+  console.log(`Passage au média suivant, index ${currentMediaIndex}`);
+  openGalleryModal(nextMedia, currentMediaIndex);
 }
 
+// Fonction pour naviguer au média précédent
 function prevGalleryMedia() {
   currentMediaIndex = (currentMediaIndex - 1 + currentPhotographerMedia.length) % currentPhotographerMedia.length;
-  openGalleryModal(currentPhotographerMedia[currentMediaIndex], currentMediaIndex);
+  const prevMedia = currentPhotographerMedia[currentMediaIndex];
+  console.log(`Passage au média précédent, index ${currentMediaIndex}`);
+  openGalleryModal(prevMedia, currentMediaIndex);
 }
 
 // Fonction pour piéger le focus dans la modale
@@ -296,12 +296,9 @@ function trapFocus(element) {
   const firstFocusableElement = focusableElements[0];
   const lastFocusableElement = focusableElements[focusableElements.length - 1];
 
-  function handleKeyDown(e) {
+  element.addEventListener('keydown', (e) => {
     let isTabPressed = e.key === 'Tab';
-
-    if (!isTabPressed) {
-      return;
-    }
+    if (!isTabPressed) return;
 
     if (e.shiftKey) {
       if (document.activeElement === firstFocusableElement) {
@@ -314,20 +311,22 @@ function trapFocus(element) {
         e.preventDefault();
       }
     }
-  }
+  });
 
-  element.addEventListener('keydown', handleKeyDown);
   firstFocusableElement.focus();
   return () => element.removeEventListener('keydown', handleKeyDown);
 }
 
-// FIN MODALE !!!!!!
+// FIN MODALE GALLERY
 
 
 // Fonction pour trier les médias
 // Fonction pour trier les médias en fonction de l'option sélectionnée
 function sortMedia(media, sortBy) {
   let sortedMedia = [...media];
+  indexMap = {}; // Réinitialisation de la cartographie des indices
+
+  // Tri des médias en fonction du critère sélectionné
   switch (sortBy) {
     case 'likes':
       sortedMedia.sort((a, b) => b.likes - a.likes);
@@ -341,21 +340,38 @@ function sortMedia(media, sortBy) {
     default:
       break;
   }
+
+  // Mise à jour de la cartographie des indices après le tri
+  sortedMedia.forEach((item, newIndex) => {
+      const originalIndex = indexMap[item.id];
+      indexMap[originalIndex] = newIndex;
+  });
+
+  console.log("Médias triés et indexMap mis à jour", indexMap); // Log pour le débogage
   return sortedMedia;
 }
 
+// Fonction pour afficher les médias triés
 // Fonction pour afficher les médias triés
 function displaySortedMedia(sortedMedia) {
   const mediaContainer = document.querySelector('#media-container');
   if (mediaContainer) {
     mediaContainer.innerHTML = '';
-    mediaContainer.appendChild(displayPhotographerMedia(sortedMedia));
+    const newMediaGrid = displayPhotographerMedia(sortedMedia);
+    mediaContainer.appendChild(newMediaGrid);
+
+    // Mise à jour de currentPhotographerMedia avec les médias triés
+    currentPhotographerMedia = sortedMedia;
+
+    // Trouver l'index actuel dans le nouveau tableau trié
+    const currentMedia = currentPhotographerMedia.find(media => media.id === currentMediaId);
+    currentMediaIndex = currentPhotographerMedia.indexOf(currentMedia);
   }
 }
 
 // Fonction pour gérer le clic sur les options du sélecteur
 function onOptionClicked(event) {
-  const option = event.currentTarget; // Utilisation de currentTarget pour cibler l'élément cliqué
+  const option = event.currentTarget;
   const dropdown = option.closest('.custom-select');
   const triggerSpan = dropdown.querySelector('.custom-select__trigger span');
   const selectedValue = option.getAttribute('data-value');
@@ -374,7 +390,7 @@ function onOptionClicked(event) {
   dropdown.classList.remove('open');
 }
 
-// Fonction pour mettre à jour l'option sélectionnée dans le sélecteur et l'annonce d'accessibilité
+// Fonction pour mettre à jour l'option sélectionnée dans le sélecteur
 function updateSelectedOption(dropdown, selectedOption) {
   const options = dropdown.querySelectorAll('.custom-option');
   options.forEach(opt => {
@@ -384,28 +400,23 @@ function updateSelectedOption(dropdown, selectedOption) {
 
   selectedOption.classList.add('selected');
   selectedOption.setAttribute('aria-selected', 'true');
-  // Annonce vocale pour les lecteurs d'écran
   selectedOption.setAttribute('aria-label', `Trié par ${selectedOption.textContent}`);
 }
 
 // Configuration des événements pour le sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', () => {
   const selectTrigger = document.querySelector('.custom-select__trigger');
-  // Rend le sélecteur focusable
   selectTrigger.tabIndex = 0;
 
   selectTrigger.addEventListener('click', () => {
     toggleDropdown(selectTrigger.parentElement);
-    // Mise à jour de l'aria-label pour l'accessibilité
     selectTrigger.setAttribute('aria-label', selectTrigger.getAttribute('aria-expanded') === 'true' ? "Cliquez pour fermer le menu de tri" : "Cliquez pour ouvrir le menu de tri");
   });
 
   const options = document.querySelectorAll('.custom-option');
   options.forEach(option => {
     option.addEventListener('click', onOptionClicked);
-    // Rend chaque option focusable
     option.tabIndex = 0;
-    // Mise à jour de l'aria-label pour l'accessibilité
     option.setAttribute('aria-label', `Trié par ${option.textContent}`);
   });
 
@@ -415,10 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
 function toggleDropdown(dropdown) {
   const isOpen = dropdown.classList.toggle('open');
-  const arrow = dropdown.querySelector('.arrow');
-  const trigger = dropdown.querySelector('.custom-select__trigger');
-  trigger.setAttribute('aria-expanded', isOpen.toString());
-  arrow.textContent = isOpen ? '▲' : '▼';
+  setArrowDirection(dropdown, isOpen);
 }
 
 // Fonction pour définir la direction de la flèche
@@ -426,7 +434,6 @@ function setArrowDirection(dropdown, isOpen) {
   const arrow = dropdown.querySelector('.arrow');
   arrow.textContent = isOpen ? '▲' : '▼';
 }
-
 
 let currentSortValue = 'default'; // Une valeur par défaut pour le tri
 
@@ -454,47 +461,30 @@ function onOptionClicked(event) {
 // Configuration pour chaque option du sélecteur
 const options = document.querySelectorAll('.custom-option');
 options.forEach(option => {
-  // Ajout du gestionnaire d'événements pour la souris sur chaque option
   option.addEventListener('click', onOptionClicked);
-
-  // Ajout du gestionnaire d'événements pour le clavier (touche "Entrée")
   option.addEventListener('keypress', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       onOptionClicked(event);
     }
   });
-
-  // Rend chaque option focusable
   option.tabIndex = 0;
 });
 
-
-
 // RENDRE CLICKABLE LES FILTRES 
-
-// Configuration des événements pour le sélecteur personnalisé
 document.addEventListener('DOMContentLoaded', () => {
-  // Sélecteur personnalisé
   const selectTrigger = document.querySelector('.custom-select__trigger');
-
-  // Rend le sélecteur focusable
   selectTrigger.tabIndex = 0;
 
-  // Gestionnaire d'événements pour la souris
   selectTrigger.addEventListener('click', () => {
-    const dropdown = selectTrigger.parentElement;
-    toggleDropdown(dropdown);
+    toggleDropdown(selectTrigger.parentElement);
   });
 
-  // Gestionnaire d'événements pour le clavier
   selectTrigger.addEventListener('keypress', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
-      const dropdown = selectTrigger.parentElement;
-      toggleDropdown(dropdown);
+      toggleDropdown(selectTrigger.parentElement);
     }
   });
 
-  // Configuration pour chaque option du sélecteur
   const options = document.querySelectorAll('.custom-option');
   if (options.length > 0) {
     const firstOption = options[0];
@@ -504,24 +494,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   options.forEach(option => {
     option.addEventListener('click', onOptionClicked);
-    option.tabIndex = 0; // Rend chaque option focusable
+    option.tabIndex = 0;
   });
 });
 
+// FIN TRIAGE
 
-// Fonction pour basculer l'état du sélecteur personnalisé et de la flèche
-function toggleDropdown(dropdown) {
-  const isOpen = dropdown.classList.toggle('open');
-  setArrowDirection(dropdown, isOpen);
-}
-
-// Fonction pour définir la direction de la flèche
-function setArrowDirection(dropdown, isOpen) {
-  const arrow = dropdown.querySelector('.arrow');
-  arrow.textContent = isOpen ? '▲' : '▼';
-}
-
-// FINNNNNNNN TRIERRRRRRRRRR
 
 // Écouteurs d'événements pour le sélecteur personnalisé et la galerie
 document.addEventListener('DOMContentLoaded', () => {
